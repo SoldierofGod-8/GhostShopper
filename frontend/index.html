@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ghost Shopper — Autonomous Competitor Intelligence System</title>
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔮</text></svg>">
+</head>
+<body>
+  <div id="app-root">
+    <!-- ====================================================================
+         TOP HEADER & GLOBAL TELEMETRY BAR
+         ==================================================================== -->
+    <header class="dashboard-header">
+      <div class="header-top">
+        <div class="brand-section">
+          <div class="brand-icon">
+            <!-- Radar / Cyber Vision Icon -->
+            <svg viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>
+            </svg>
+          </div>
+          <div class="brand-title-group">
+            <h1>
+              🔮 GHOST SHOPPER
+              <span class="brand-version">v2.5.0-SEC</span>
+            </h1>
+            <p class="brand-subtitle">Autonomous Anti-Detection Competitor Intelligence Fleet</p>
+          </div>
+        </div>
+
+        <div class="header-controls">
+          <button id="btn-toggle-demo" class="btn btn-secondary btn-sm" title="Toggle autonomous simulation mode for testing">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            <span id="demo-mode-label">Simulation Mode</span>
+          </button>
+          <button id="btn-refresh-all" class="btn btn-secondary btn-sm" title="Force refresh system telemetry">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+            Sync
+          </button>
+        </div>
+      </div>
+
+      <!-- Telemetry Status Bar -->
+      <div class="status-bar">
+        <div class="telemetry-item">
+          <span id="ws-indicator-dot" class="status-indicator-dot reconnecting"></span>
+          <span class="telemetry-label">Network Link:</span>
+          <span id="ws-status-text" class="telemetry-value accent-cyan">CONNECTING</span>
+        </div>
+
+        <div class="telemetry-item">
+          <span class="telemetry-label">Pool Availability:</span>
+          <span id="header-pool-status" class="telemetry-value accent-green">-- / -- READY</span>
+        </div>
+
+        <div class="telemetry-item">
+          <span class="telemetry-label">Active Missions:</span>
+          <span id="header-active-tasks" class="telemetry-value accent-cyan">0 RUNNING</span>
+        </div>
+
+        <div class="telemetry-item">
+          <span class="telemetry-label">Purged Containers:</span>
+          <span id="header-purged-count" class="telemetry-value">0 WIPED</span>
+        </div>
+
+        <div class="telemetry-item">
+          <span class="telemetry-label">System Uptime:</span>
+          <span id="header-uptime" class="telemetry-value mono">00:00:00</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ====================================================================
+         HUMAN-IN-THE-LOOP APPROVAL REQUESTS (High Priority Alert Area)
+         ==================================================================== -->
+    <section id="approval-section" class="cyber-card approvals-card">
+      <div class="card-header">
+        <div class="card-title-group">
+          <svg viewBox="0 0 24 24" fill="var(--accent-orange)">
+            <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 10h2v4h-2zm0 6h2v2h-2z"/>
+          </svg>
+          <span class="card-title">Human-in-the-Loop Interventions</span>
+          <span id="approval-count-badge" class="approval-badge-warning">0 Pending</span>
+        </div>
+        <div class="card-actions">
+          <span class="telemetry-label">Target Bot Defenses & Anomaly Audits</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="approvals-container" class="approvals-container">
+          <div class="approval-empty-state">
+            <svg viewBox="0 0 24 24">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+            <span>All browser sandboxes operating fully autonomously. Zero human interventions currently flagged.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         MAIN OPERATIONAL GRID (Control + Logs vs Viewport + Observability)
+         ==================================================================== -->
+    <div class="main-dashboard-grid">
+      
+      <!-- LEFT COLUMN: Control Panel & Live Terminal Log -->
+      <div class="column-left">
+        
+        <!-- CONTROL PANEL -->
+        <section class="cyber-card control-panel-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <svg viewBox="0 0 24 24">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2z"/>
+              </svg>
+              <span class="card-title">Mission Control & Dispatch</span>
+            </div>
+            <div class="card-actions">
+              <span id="url-count-indicator" class="url-counter-badge">0 URLs</span>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <!-- URL Input Area -->
+            <div class="url-input-container">
+              <div class="url-input-header">
+                <span class="url-input-label">Target Product URLs (One per line)</span>
+                <div class="input-quick-actions">
+                  <button id="btn-sample-urls" class="btn btn-secondary btn-sm" type="button">
+                    Load Samples
+                  </button>
+                  <button id="btn-clear-urls" class="btn btn-secondary btn-sm" type="button">
+                    Clear
+                  </button>
+                </div>
+              </div>
+              <textarea 
+                id="url-input" 
+                class="cyber-textarea" 
+                placeholder="https://www.target-store.com/dp/B09V3KXYZ&#10;https://www.competitor.com/products/wireless-headphones&#10;https://www.shop-sample.org/item/40918"
+                rows="5"
+                spellcheck="false"
+              ></textarea>
+            </div>
+
+            <!-- Stealth & Fleet Settings -->
+            <div class="control-options-grid">
+              <div class="option-group">
+                <label for="select-stealth">Stealth Profile</label>
+                <select id="select-stealth" class="cyber-select">
+                  <option value="ghost">Ghost Mode (Undetected)</option>
+                  <option value="paranoid">Paranoid (Full Fingerprint Mask)</option>
+                  <option value="aggressive">High Velocity (Direct)</option>
+                </select>
+              </div>
+              <div class="option-group">
+                <label for="select-concurrency">Concurrency Limit</label>
+                <select id="select-concurrency" class="cyber-select">
+                  <option value="3">3 Parallel Sandboxes</option>
+                  <option value="5" selected>5 Parallel Sandboxes</option>
+                  <option value="10">10 Parallel Sandboxes</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Primary Dispatch Button -->
+            <button id="btn-deploy-agents" class="btn btn-primary" type="button">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+              </svg>
+              <span>Deploy Ghost Fleet</span>
+            </button>
+
+            <!-- Batch History Section -->
+            <div class="batch-history-section">
+              <div class="section-subtitle">
+                <span>Recent Batch Missions</span>
+                <span id="batch-total-count" class="mono">0 batches</span>
+              </div>
+              <div id="batch-history-list" class="batch-history-list">
+                <div class="approval-empty-state" style="padding: 10px;">
+                  <span>No prior batches executed yet.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- LIVE LOG STREAM -->
+        <section class="cyber-card log-stream-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <svg viewBox="0 0 24 24">
+                <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8h16v10zM6 10h2v2H6zm0 4h8v2H6z"/>
+              </svg>
+              <span class="card-title">Live Log Stream</span>
+              <span id="log-count-badge" class="telemetry-label mono">(0 events)</span>
+            </div>
+            <div class="log-terminal-toolbar">
+              <button class="filter-btn active" data-filter="ALL">ALL</button>
+              <button class="filter-btn" data-filter="INFO">INFO</button>
+              <button class="filter-btn" data-filter="WARN">WARN</button>
+              <button class="filter-btn" data-filter="ERROR">ERROR</button>
+              <button id="btn-toggle-scroll" class="filter-btn" title="Toggle autoscroll">
+                Scroll: ON
+              </button>
+              <button id="btn-clear-logs" class="filter-btn" title="Clear log entries">
+                Clear
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="log-viewport" class="log-terminal-viewport" tabindex="0">
+              <!-- Dynamically populated by LogStream -->
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- RIGHT COLUMN: Mission Viewport + Security Observability Matrix -->
+      <div class="column-right">
+        
+        <!-- MISSION VIEWPORT: Live Browser Snapshots -->
+        <section class="cyber-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <svg viewBox="0 0 24 24">
+                <path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zm-10-7h9v6h-9z"/>
+              </svg>
+              <span class="card-title">Mission Viewport (Sandbox Snapshots)</span>
+            </div>
+            <div class="card-actions">
+              <span id="viewport-active-count" class="url-counter-badge">0 Active Cameras</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="viewport-grid" class="viewport-grid">
+              <div class="viewport-empty-state">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <rect x="2" y="3" width="20" height="14" rx="2" stroke-width="2"/>
+                  <line x1="8" y1="21" x2="16" y2="21" stroke-width="2"/>
+                  <line x1="12" y1="17" x2="12" y2="21" stroke-width="2"/>
+                </svg>
+                <p>Awaiting sandbox agent deployment. Submitted missions will display live screen telemetry here.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECURITY OBSERVABILITY MATRIX -->
+        <section class="cyber-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+              </svg>
+              <span class="card-title">Security Observability Matrix</span>
+            </div>
+            <div class="card-actions">
+              <span class="telemetry-label">Telemetry: 1.0s Pulse</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- Top Telemetry Row: CPU, RAM, Network Security, Containers -->
+            <div class="observability-metrics-grid">
+              
+              <!-- CPU Gauge -->
+              <div class="matrix-stat-box">
+                <div class="stat-box-header">
+                  <span class="stat-box-title">Host CPU Load</span>
+                  <svg class="stat-box-icon" viewBox="0 0 24 24">
+                    <path d="M4 6h2v12H4zm4-3h2v18H8zm4 5h2v8h-2zm4-3h2v14h-2zm4 4h2v6h-2z"/>
+                  </svg>
+                </div>
+                <div class="stat-gauge-wrapper">
+                  <svg class="circular-gauge" viewBox="0 0 36 36">
+                    <path class="gauge-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                    <path id="gauge-cpu" class="gauge-fill cyan" stroke-dasharray="100, 100" stroke-dashoffset="75" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                  </svg>
+                  <div class="stat-numeric-group">
+                    <span id="metric-cpu-text" class="stat-big-number">25%</span>
+                    <span class="stat-sub-text">8 Cores Active</span>
+                  </div>
+                </div>
+                <div class="meter-bar-track">
+                  <div id="meter-cpu-bar" class="meter-bar-fill" style="width: 25%;"></div>
+                </div>
+              </div>
+
+              <!-- RAM Gauge -->
+              <div class="matrix-stat-box">
+                <div class="stat-box-header">
+                  <span class="stat-box-title">RAM Allocation</span>
+                  <svg class="stat-box-icon" viewBox="0 0 24 24">
+                    <path d="M2 9h2v6H2zm4-3h2v12H6zm4 2h2v8h-2zm4-4h2v16h-2zm4 5h2v6h-2zm4-2h2v10h-2z"/>
+                  </svg>
+                </div>
+                <div class="stat-gauge-wrapper">
+                  <svg class="circular-gauge" viewBox="0 0 36 36">
+                    <path class="gauge-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                    <path id="gauge-ram" class="gauge-fill green" stroke-dasharray="100, 100" stroke-dashoffset="60" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                  </svg>
+                  <div class="stat-numeric-group">
+                    <span id="metric-ram-text" class="stat-big-number">40%</span>
+                    <span class="stat-sub-text">6.4 / 16.0 GB</span>
+                  </div>
+                </div>
+                <div class="meter-bar-track">
+                  <div id="meter-ram-bar" class="meter-bar-fill" style="width: 40%;"></div>
+                </div>
+              </div>
+
+              <!-- Network Blockade Counter -->
+              <div class="matrix-stat-box">
+                <div class="stat-box-header">
+                  <span class="stat-box-title">Egress Firewall</span>
+                  <svg class="stat-box-icon" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5zm4 4h-2v-2h2v2zm0-4h-2V7h2v5z"/>
+                  </svg>
+                </div>
+                <div class="stat-numeric-group" style="margin-top: 6px;">
+                  <span id="metric-blocked-requests" class="stat-big-number accent-orange">0</span>
+                  <span class="stat-sub-text">Blocked Trackers / Beacons</span>
+                </div>
+                <div class="meter-bar-track">
+                  <div id="meter-network-bar" class="meter-bar-fill orange" style="width: 15%;"></div>
+                </div>
+              </div>
+
+              <!-- Container Sandboxes -->
+              <div class="matrix-stat-box">
+                <div class="stat-box-header">
+                  <span class="stat-box-title">Isolated Fleet</span>
+                  <svg class="stat-box-icon" viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                  </svg>
+                </div>
+                <div class="stat-numeric-group" style="margin-top: 6px;">
+                  <span id="metric-containers-active" class="stat-big-number accent-cyan">0 ACTIVE</span>
+                  <span id="metric-containers-pool" class="stat-sub-text">0 Warm in Pool</span>
+                </div>
+                <div class="meter-bar-track">
+                  <div id="meter-containers-bar" class="meter-bar-fill" style="width: 0%;"></div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- State Pipeline Visualization -->
+            <div class="state-pipeline-container">
+              <div class="pipeline-title">
+                <span>MicroVM Lifecycle State Pipeline</span>
+                <span class="mono">ZERO-RESIDUAL HARDENING</span>
+              </div>
+              <div class="pipeline-track">
+                
+                <div class="pipeline-step" data-stage="POOLED">
+                  <div class="pipeline-node" id="pipe-node-pooled">P1</div>
+                  <span class="pipeline-label">POOLED</span>
+                  <span class="pipeline-count" id="pipe-count-pooled">0</span>
+                </div>
+
+                <div class="pipeline-step" data-stage="PROVISIONING">
+                  <div class="pipeline-node" id="pipe-node-provisioning">P2</div>
+                  <span class="pipeline-label">PROVISIONING</span>
+                  <span class="pipeline-count" id="pipe-count-provisioning">0</span>
+                </div>
+
+                <div class="pipeline-step" data-stage="EXECUTING">
+                  <div class="pipeline-node" id="pipe-node-executing">E3</div>
+                  <span class="pipeline-label">EXECUTING</span>
+                  <span class="pipeline-count" id="pipe-count-executing">0</span>
+                </div>
+
+                <div class="pipeline-step" data-stage="VERIFYING">
+                  <div class="pipeline-node" id="pipe-node-verifying">V4</div>
+                  <span class="pipeline-label">VERIFYING</span>
+                  <span class="pipeline-count" id="pipe-count-verifying">0</span>
+                </div>
+
+                <div class="pipeline-step" data-stage="COMPLETED">
+                  <div class="pipeline-node" id="pipe-node-completed">C5</div>
+                  <span class="pipeline-label">COMPLETED</span>
+                  <span class="pipeline-count" id="pipe-count-completed">0</span>
+                </div>
+
+                <div class="pipeline-step" data-stage="WIPED">
+                  <div class="pipeline-node" id="pipe-node-wiped">W6</div>
+                  <span class="pipeline-label">WIPED & PURGED</span>
+                  <span class="pipeline-count" id="pipe-count-wiped">0</span>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         RESULTS TABLE (Extracted Competitor Intelligence)
+         ==================================================================== -->
+    <section class="cyber-card">
+      <div class="card-header">
+        <div class="card-title-group">
+          <svg viewBox="0 0 24 24">
+            <path d="M4 9h16v2H4zm0 4h10v2H4zm0 4h16v2H4zm0-8h16V7H4z"/>
+          </svg>
+          <span class="card-title">Extracted Competitor Intelligence Feed</span>
+          <span id="results-count-badge" class="telemetry-label mono">(0 items)</span>
+        </div>
+        <div class="card-actions">
+          <input 
+            type="text" 
+            id="results-search" 
+            class="cyber-select" 
+            placeholder="Filter by product, domain..." 
+            style="width: 220px;"
+          >
+          <button id="btn-export-csv" class="btn btn-secondary btn-sm" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+            </svg>
+            Export CSV
+          </button>
+          <button id="btn-export-json" class="btn btn-secondary btn-sm" type="button">
+            Export JSON
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive-wrapper">
+          <table class="cyber-table">
+            <thead>
+              <tr>
+                <th>Target URL</th>
+                <th>Product Identifier</th>
+                <th>Extracted Price</th>
+                <th>Confidence</th>
+                <th>Pipeline State</th>
+                <th>Extracted At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="results-table-body">
+              <tr>
+                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px;">
+                  No extraction missions executed yet. Enter target URLs above and click Deploy Ghost Fleet.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         LIGHTBOX MODAL FOR SCREENSHOT ZOOM
+         ==================================================================== -->
+    <div id="screenshot-modal" class="cyber-modal-backdrop" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="cyber-modal-container">
+        <div class="modal-header">
+          <div class="modal-header-meta">
+            <span class="brand-version" id="modal-container-tag">CONTAINER #---</span>
+            <h3 class="modal-title" id="modal-title">Live Sandbox Inspector</h3>
+          </div>
+          <button id="btn-close-modal" class="modal-close-btn" aria-label="Close modal">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-image-preview-wrapper">
+            <img id="modal-image" class="modal-image-preview" src="" alt="Sandbox Screen Capture">
+          </div>
+          <div class="modal-metadata-grid">
+            <div>
+              <span class="telemetry-label">Target URL:</span>
+              <div id="modal-meta-url" class="mono accent-cyan" style="word-break: break-all;">--</div>
+            </div>
+            <div>
+              <span class="telemetry-label">Current Stage:</span>
+              <div id="modal-meta-step" class="mono">--</div>
+            </div>
+            <div>
+              <span class="telemetry-label">Capture Timestamp:</span>
+              <div id="modal-meta-time" class="mono">--</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         TOAST NOTIFICATION STACK
+         ==================================================================== -->
+    <div id="toast-container" aria-live="polite"></div>
+
+  </div>
+
+  <!-- JavaScript ES Modules -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

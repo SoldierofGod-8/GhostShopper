@@ -1,0 +1,16 @@
+{
+  "name": "ghost-shopper",
+  "version": "1.0.0",
+  "description": "Sandboxed Playwright scraping engine for Ghost Shopper",
+  "type": "module",
+  "main": "scrape.js",
+  "scripts": {
+    "start": "node scrape.js"
+  },
+  "dependencies": {
+    "playwright": "^1.42.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

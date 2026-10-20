@@ -1,0 +1,59 @@
+# ==============================================================================
+# Ghost Shopper - Hardened Playwright Worker Sandbox
+# ==============================================================================
+# Base image: Ubuntu Noble with Playwright v1.48.0 pre-installed
+FROM mcr.microsoft.com/playwright:v1.48.0-noble
+
+# Container metadata labels
+LABEL org.opencontainers.image.title="Ghost Shopper Sandbox Worker" \
+      org.opencontainers.image.description="Hardened Playwright Chromium worker sandbox for isolated browser automation" \
+      org.opencontainers.image.version="1.0.0" \
+      org.opencontainers.image.vendor="Ghost Shopper" \
+      com.ghostshopper.role="sandbox-worker" \
+      com.ghostshopper.security.profile="hardened"
+
+# Set environment variables
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
+    NODE_ENV=production \
+    DEBIAN_FRONTEND=noninteractive
+
+# Install system utilities (procps provides pgrep/ps for process health monitoring)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends procps && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create non-root user 'ghostworker' with UID 1001 and matching GID
+RUN groupadd -g 1001 ghostworker && \
+    useradd -u 1001 -g ghostworker -m -s /bin/bash ghostworker
+
+# Set working directory
+WORKDIR /app
+
+# Configure browser cache: remove Firefox and WebKit, ensure Chromium is installed
+RUN rm -rf /ms-playwright/firefox* /ms-playwright/webkit* && \
+    npx playwright install --with-deps chromium && \
+    mkdir -p /app /ms-playwright && \
+    chown -R ghostworker:ghostworker /app /ms-playwright
+
+# Copy package dependency definition
+COPY --chown=ghostworker:ghostworker package.json /app/
+
+# Install Node.js production dependencies
+RUN npm install --omit=dev --no-audit --no-fund && \
+    npm cache clean --force
+
+# Copy Playwright scraper script
+COPY --chown=ghostworker:ghostworker scrape.js /app/
+
+# Ensure workspace and app directory permissions for non-root execution
+RUN chown -R ghostworker:ghostworker /app
+
+# Switch to non-root user
+USER ghostworker
+
+# Health check verifying that the Node.js process is active
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD pgrep -f node || exit 1
+
+# Container entrypoint executing the scraper worker
+ENTRYPOINT ["node", "scrape.js"]

@@ -1,0 +1,45 @@
+# ==============================================================================
+# Ghost Shopper - Multi-Container Infrastructure
+# ==============================================================================
+# NOTE: Worker sandbox containers are NOT defined here. They are dynamically
+# provisioned and lifecycle-managed on-demand by the FastAPI Orchestrator via the
+# Docker SDK (using gVisor runsc runtime when configured).
+# ==============================================================================
+
+version: '3.8'
+
+services:
+  orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile.orchestrator
+    container_name: ghost-shopper-orchestrator
+    ports:
+      - "8000:8000"
+    volumes:
+      # Docker socket mount enables orchestrator to spawn and monitor sandboxes
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Shared workspace for storing scrape artifacts, logs, and screenshots
+      - ./workspace:/app/workspace
+    env_file:
+      - .env
+    networks:
+      - ghost-net
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+networks:
+  ghost-net:
+    name: ghost-net
+    driver: bridge
+
+volumes:
+  workspace-data:
+    name: ghost-shopper-workspace-data

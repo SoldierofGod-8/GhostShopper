@@ -1,0 +1,70 @@
+# ==============================================================================
+# Ghost Shopper - FastAPI Orchestrator Service
+# ==============================================================================
+FROM python:3.12-slim
+
+# Metadata labels
+LABEL org.opencontainers.image.title="Ghost Shopper Orchestrator" \
+      org.opencontainers.image.description="FastAPI orchestrator managing dynamic sandbox workers and inference pipeline" \
+      org.opencontainers.image.version="1.0.0" \
+      org.opencontainers.image.vendor="Ghost Shopper" \
+      com.ghostshopper.role="orchestrator"
+
+# Environment configuration
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    WORKSPACE_DIR=/app/workspace \
+    DOCKER_HOST=unix:///var/run/docker.sock
+
+# Install essential system dependencies and Docker CLI for container management
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    gnupg \
+    && install -m 0755 -d /etc/apt/keyrings \
+    && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
+    && chmod a+r /etc/apt/keyrings/docker.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends docker-ce-cli \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user 'ghostorchestrator' (UID 1000) and ensure docker socket compatibility
+RUN groupadd -g 1000 ghostorchestrator && \
+    useradd -u 1000 -g ghostorchestrator -m -s /bin/bash ghostorchestrator && \
+    groupadd -g 999 docker || true && \
+    usermod -aG docker ghostorchestrator || true
+
+# Set working directory
+WORKDIR /app
+
+# Copy dependency specifications and install Python requirements
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Create workspace directory for data artifacts and outputs
+RUN mkdir -p /app/workspace && \
+    chown -R ghostorchestrator:ghostorchestrator /app/workspace
+
+# Copy application backend source code
+COPY --chown=ghostorchestrator:ghostorchestrator *.py /app/
+
+# Copy frontend static web assets
+COPY --chown=ghostorchestrator:ghostorchestrator frontend/ /app/frontend/
+
+# Ensure all application permissions are assigned to non-root user
+RUN chown -R ghostorchestrator:ghostorchestrator /app
+
+# Switch to non-root orchestrator user
+USER ghostorchestrator
+
+# Expose HTTP / WebSocket API port
+EXPOSE 8000
+
+# Health check to ensure FastAPI orchestrator API is operational
+HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Launch orchestrator with Uvicorn server
+CMD ["uvicorn", "orchestrator:app", "--host", "0.0.0.0", "--port", "8000"]
