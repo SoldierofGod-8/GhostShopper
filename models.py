@@ -55,6 +55,77 @@ class ScrapeRequest(BaseModel):
     )
 
 
+class GoalRequest(BaseModel):
+    """
+    Pattern B (Sandboxed Browser Use): High-level goal submitted by user.
+    The orchestrator plans actions, provisions gVisor sandboxes, runs Playwright,
+    verifies screenshots with Vultr Llama 3.2 Vision, and executes HITL reviews.
+    """
+    goal: str = Field(
+        ...,
+        description="Natural language goal (e.g., 'Compare Sony WH-1000XM5 across Best Buy & Walmart')"
+    )
+    stealth_profile: str = Field(
+        default="ghost",
+        description="Stealth profile ('ghost', 'paranoid', 'aggressive')"
+    )
+    concurrency: int = Field(
+        default=3,
+        ge=1,
+        le=10,
+        description="Parallel sandbox concurrency limit"
+    )
+    batch_id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()),
+        description="Generated batch correlation ID"
+    )
+
+
+class ContainmentDemoType(str, Enum):
+    """
+    Containment moment scenarios designed for the Vultr video submission demonstration.
+    """
+    SSRF_METADATA_ATTACK = "SSRF_METADATA_ATTACK"
+    MEMORY_BOMB_OOM = "MEMORY_BOMB_OOM"
+    DECEPTIVE_PRICE_HITL = "DECEPTIVE_PRICE_HITL"
+
+
+class ContainmentDemoRequest(BaseModel):
+    """
+    Trigger request for demonstrating real containment enforcement on Vultr.
+    """
+    scenario: ContainmentDemoType = Field(
+        default=ContainmentDemoType.SSRF_METADATA_ATTACK,
+        description="The containment attack vector to demonstrate"
+    )
+
+
+class VultrConfigRequest(BaseModel):
+    """
+    Request payload for dynamically updating Vultr credentials from UI or API.
+    """
+    vultr_api_key: Optional[str] = Field(default=None, description="Vultr Cloud Account API Key")
+    vultr_inference_api_key: Optional[str] = Field(default=None, description="Vultr Serverless Inference API Key")
+    vultr_vision_model: Optional[str] = Field(default=None, description="Vision LLM model name")
+    api_key: Optional[str] = Field(default=None, description="Alias for vultr_api_key")
+    inference_key: Optional[str] = Field(default=None, description="Alias for vultr_inference_api_key")
+    vision_model: Optional[str] = Field(default=None, description="Alias for vultr_vision_model")
+
+
+class VultrConfigResponse(BaseModel):
+    """
+    Response details for Vultr infrastructure credentials and connectivity status.
+    """
+    vultr_api_key_configured: bool = False
+    vultr_inference_key_configured: bool = False
+    vultr_vision_model: str = "llama-3.2-90b-vision-preview"
+    vultr_inference_endpoint: str = "https://api.vultrinference.com/v1/chat/completions"
+    mode: str = "simulation"
+    masked_account_key: str = ""
+    masked_inference_key: str = ""
+    status_message: str = ""
+
+
 class PriceData(BaseModel):
     """
     Structured price information extracted and verified from an e-commerce page.

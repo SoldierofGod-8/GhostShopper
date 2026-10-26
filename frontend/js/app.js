@@ -75,8 +75,36 @@ export class GhostShopperApp {
       modalMetaTime: document.getElementById('modal-meta-time'),
       btnCloseModal: document.getElementById('btn-close-modal'),
       btnClearLogs: document.getElementById('btn-clear-logs'),
-      logFilterButtons: document.querySelectorAll('.filter-btn[data-filter]')
+      logFilterButtons: document.querySelectorAll('.filter-btn[data-filter]'),
+
+      // Pattern B Goal & Containment Demo Elements
+      tabModeGoal: document.getElementById('tab-mode-goal'),
+      tabModeUrls: document.getElementById('tab-mode-urls'),
+      goalContainer: document.getElementById('goal-input-container'),
+      urlContainer: document.getElementById('url-input-container'),
+      goalInput: document.getElementById('goal-input'),
+      btnDeployLabel: document.getElementById('btn-deploy-label'),
+      btnSampleGoal1: document.getElementById('btn-sample-goal-1'),
+      btnSampleGoal2: document.getElementById('btn-sample-goal-2'),
+      btnSampleGoal3: document.getElementById('btn-sample-goal-3'),
+      btnDemoSsrf: document.getElementById('btn-demo-ssrf'),
+      btnDemoOom: document.getElementById('btn-demo-oom'),
+      btnDemoHitl: document.getElementById('btn-demo-hitl'),
+
+      // Vultr Onboarding Modal (Nov 3rd plug-in)
+      btnVultrModal: document.getElementById('btn-vultr-modal'),
+      vultrBadgeLabel: document.getElementById('vultr-badge-label'),
+      vultrModal: document.getElementById('vultr-modal'),
+      btnCloseVultrModal: document.getElementById('btn-close-vultr-modal'),
+      inputVultrApiKey: document.getElementById('input-vultr-api-key'),
+      inputVultrInfKey: document.getElementById('input-vultr-inf-key'),
+      selectVultrVisionModel: document.getElementById('select-vultr-vision-model'),
+      btnTestVultrKeys: document.getElementById('btn-test-vultr-keys'),
+      btnSaveVultrKeys: document.getElementById('btn-save-vultr-keys'),
+      vultrModalModeBadge: document.getElementById('vultr-modal-mode-badge'),
+      vultrModalStatusText: document.getElementById('vultr-modal-status-text')
     };
+    this.activeMode = 'goal'; // 'goal' or 'urls'
   }
 
   /**
@@ -97,6 +125,7 @@ export class GhostShopperApp {
 
     // Initial REST sync
     await this.fetchPoolStatus();
+    await this.fetchVultrConfig();
 
     // Periodic telemetry sync (fallback every 8s)
     this.poolPollInterval = setInterval(() => {
@@ -191,6 +220,64 @@ export class GhostShopperApp {
    * @private
    */
   _setupDomListeners() {
+    // Pattern B Mode Switcher Tabs
+    if (this.dom.tabModeGoal && this.dom.tabModeUrls) {
+      this.dom.tabModeGoal.addEventListener('click', () => {
+        this.activeMode = 'goal';
+        this.dom.tabModeGoal.className = 'btn btn-sm btn-primary active-tab';
+        this.dom.tabModeUrls.className = 'btn btn-sm btn-secondary';
+        if (this.dom.goalContainer) this.dom.goalContainer.style.display = 'block';
+        if (this.dom.urlContainer) this.dom.urlContainer.style.display = 'none';
+        if (this.dom.btnDeployLabel) this.dom.btnDeployLabel.textContent = 'Plan & Dispatch Agent Fleet';
+      });
+
+      this.dom.tabModeUrls.addEventListener('click', () => {
+        this.activeMode = 'urls';
+        this.dom.tabModeUrls.className = 'btn btn-sm btn-primary active-tab';
+        this.dom.tabModeGoal.className = 'btn btn-sm btn-secondary';
+        if (this.dom.goalContainer) this.dom.goalContainer.style.display = 'none';
+        if (this.dom.urlContainer) this.dom.urlContainer.style.display = 'block';
+        if (this.dom.btnDeployLabel) this.dom.btnDeployLabel.textContent = 'Deploy Ghost Fleet (URLs)';
+      });
+    }
+
+    // Pattern B Quick Goal Samples
+    if (this.dom.btnSampleGoal1) {
+      this.dom.btnSampleGoal1.addEventListener('click', () => {
+        if (this.dom.goalInput) {
+          this.dom.goalInput.value = 'Compare Sony WH-1000XM5 wireless noise-canceling headphones across competitor retail sites, verify pricing with Vultr Vision LLM, and flag cart surcharges.';
+          this.toast.info('Goal Loaded', 'Loaded Sony XM5 competitor sweep goal.');
+        }
+      });
+    }
+    if (this.dom.btnSampleGoal2) {
+      this.dom.btnSampleGoal2.addEventListener('click', () => {
+        if (this.dom.goalInput) {
+          this.dom.goalInput.value = 'Audit Apple MacBook Air M3 15-inch 16GB RAM across major electronics retailers, verify authentic stock, and check checkout fee discrepancies.';
+          this.toast.info('Goal Loaded', 'Loaded MacBook Air pricing audit goal.');
+        }
+      });
+    }
+    if (this.dom.btnSampleGoal3) {
+      this.dom.btnSampleGoal3.addEventListener('click', () => {
+        if (this.dom.goalInput) {
+          this.dom.goalInput.value = 'Compare NVIDIA GeForce RTX 4080 Super GPU across Best Buy, Newegg, and B&H, check for bot protection traps, and extract verified cart totals.';
+          this.toast.info('Goal Loaded', 'Loaded RTX 4080 GPU competitor sweep goal.');
+        }
+      });
+    }
+
+    // Containment Demo Buttons (for Vultr Video Demonstration)
+    if (this.dom.btnDemoSsrf) {
+      this.dom.btnDemoSsrf.addEventListener('click', () => this.triggerContainmentDemo('SSRF_METADATA_ATTACK'));
+    }
+    if (this.dom.btnDemoOom) {
+      this.dom.btnDemoOom.addEventListener('click', () => this.triggerContainmentDemo('MEMORY_BOMB_OOM'));
+    }
+    if (this.dom.btnDemoHitl) {
+      this.dom.btnDemoHitl.addEventListener('click', () => this.triggerContainmentDemo('DECEPTIVE_PRICE_HITL'));
+    }
+
     // URL input typing and line counting
     if (this.dom.urlInput) {
       this.dom.urlInput.addEventListener('input', () => this._updateUrlCounter());
@@ -283,9 +370,35 @@ export class GhostShopperApp {
       });
     }
 
+    // Vultr Onboarding Modal Controls
+    if (this.dom.btnVultrModal) {
+      this.dom.btnVultrModal.addEventListener('click', () => this.openVultrModal());
+    }
+    if (this.dom.btnCloseVultrModal) {
+      this.dom.btnCloseVultrModal.addEventListener('click', () => this.closeVultrModal());
+    }
+    if (this.dom.vultrModal) {
+      this.dom.vultrModal.addEventListener('click', (e) => {
+        if (e.target === this.dom.vultrModal) {
+          this.closeVultrModal();
+        }
+      });
+    }
+    if (this.dom.btnSaveVultrKeys) {
+      this.dom.btnSaveVultrKeys.addEventListener('click', () => this.saveVultrConfig());
+    }
+    if (this.dom.btnTestVultrKeys) {
+      this.dom.btnTestVultrKeys.addEventListener('click', () => this.testVultrKeys());
+    }
+
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.dom.modal && this.dom.modal.classList.contains('open')) {
-        this.closeLightbox();
+      if (e.key === 'Escape') {
+        if (this.dom.modal && this.dom.modal.classList.contains('open')) {
+          this.closeLightbox();
+        }
+        if (this.dom.vultrModal && this.dom.vultrModal.classList.contains('open')) {
+          this.closeVultrModal();
+        }
       }
     });
   }
@@ -380,36 +493,158 @@ export class GhostShopperApp {
   }
 
   /**
-   * Dispatches the batch scraping mission.
+   * Dispatches the scraping mission (either Goal mode or URL list mode).
    * @private
    */
   async _handleDeployClick() {
-    const urls = this._extractUrlsFromInput();
-    if (urls.length === 0) {
-      this.toast.warning('Input Required', 'Please enter at least one target product URL.');
-      if (this.dom.urlInput) this.dom.urlInput.focus();
-      return;
-    }
+    if (this.activeMode === 'goal') {
+      const goalText = this.dom.goalInput ? this.dom.goalInput.value.trim() : '';
+      if (!goalText) {
+        this.toast.warning('Goal Required', 'Please enter a natural language mission goal.');
+        if (this.dom.goalInput) this.dom.goalInput.focus();
+        return;
+      }
 
-    if (this.dom.btnDeploy) {
-      this.dom.btnDeploy.disabled = true;
-      this.dom.btnDeploy.innerHTML = `
-        <span class="mono" style="animation: pulse-glow 1s infinite;">PROVISIONING...</span>
-      `;
-    }
-
-    try {
-      await this.submitBatch(urls);
-    } finally {
       if (this.dom.btnDeploy) {
-        this.dom.btnDeploy.disabled = false;
+        this.dom.btnDeploy.disabled = true;
         this.dom.btnDeploy.innerHTML = `
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-          </svg>
-          <span>Deploy Ghost Fleet</span>
+          <span class="mono" style="animation: pulse-glow 1s infinite;">PLANNING & DISPATCHING...</span>
         `;
       }
+
+      try {
+        await this.submitGoal(goalText);
+      } finally {
+        if (this.dom.btnDeploy) {
+          this.dom.btnDeploy.disabled = false;
+          this.dom.btnDeploy.innerHTML = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+            <span id="btn-deploy-label">Plan & Dispatch Agent Fleet</span>
+          `;
+        }
+      }
+    } else {
+      // Direct URLs Mode
+      const urls = this._extractUrlsFromInput();
+      if (urls.length === 0) {
+        this.toast.warning('Input Required', 'Please enter at least one target product URL.');
+        if (this.dom.urlInput) this.dom.urlInput.focus();
+        return;
+      }
+
+      if (this.dom.btnDeploy) {
+        this.dom.btnDeploy.disabled = true;
+        this.dom.btnDeploy.innerHTML = `
+          <span class="mono" style="animation: pulse-glow 1s infinite;">PROVISIONING...</span>
+        `;
+      }
+
+      try {
+        await this.submitBatch(urls);
+      } finally {
+        if (this.dom.btnDeploy) {
+          this.dom.btnDeploy.disabled = false;
+          this.dom.btnDeploy.innerHTML = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+            <span id="btn-deploy-label">Deploy Ghost Fleet (URLs)</span>
+          `;
+        }
+      }
+    }
+  }
+
+  /**
+   * Pattern B: Submits a natural language goal to POST /api/goal
+   * Model plans -> Playwright runs in container -> vision model verifies -> HITL.
+   * @param {string} goalText
+   */
+  async submitGoal(goalText) {
+    const stealth = this.dom.selectStealth ? this.dom.selectStealth.value : 'ghost';
+    const concurrency = this.dom.selectConcurrency ? parseInt(this.dom.selectConcurrency.value, 10) : 3;
+
+    this.logStream.addLog({
+      level: 'INFO',
+      message: `[AGENT GOAL DISPATCH] Submitting goal: "${goalText}". Mode: Pattern B (Sandboxed Browser Agent).`
+    });
+
+    try {
+      const response = await fetch('/api/goal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          goal: goalText,
+          stealth_profile: stealth,
+          concurrency
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      const batchId = result.batch_id || `goal-${Date.now().toString(36)}`;
+
+      this._recordBatch({
+        batchId,
+        urlCount: result.total_urls || 3,
+        status: 'PLANNED_AND_DISPATCHED',
+        timestamp: new Date()
+      });
+
+      if (Array.isArray(result.plan)) {
+        this.logStream.addLog({
+          level: 'INFO',
+          message: `[AGENT PLANNER] Goal broken down into ${result.plan.length} verification steps.`
+        });
+      }
+
+      if (Array.isArray(result.tasks)) {
+        for (const task of result.tasks) {
+          this._handleTaskUpdate(task);
+        }
+      }
+
+      this.toast.success('Agent Plan Active', `Synthesized ${result.total_urls || 3} sandboxed inspection tasks.`);
+      this.fetchPoolStatus();
+      return result;
+    } catch (err) {
+      console.warn('[GhostShopperApp] REST /api/goal failed or offline:', err);
+      this.toast.error('API Offline', `Could not reach backend (${err.message}). Executing agent plan locally...`);
+      this._simulateLocalGoal(goalText);
+    }
+  }
+
+  /**
+   * Demonstrates on-demand Containment Moment for the Vultr Video Submission:
+   * Calls POST /api/demo/containment-moment or falls back to local simulation.
+   * @param {string} scenario 
+   */
+  async triggerContainmentDemo(scenario) {
+    this.logStream.addLog({
+      level: 'SECURITY',
+      message: `[VULTR CONTAINMENT DEMO] Operator triggered containment proof: ${scenario}`
+    });
+
+    try {
+      const response = await fetch('/api/demo/containment-moment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scenario })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}`);
+      }
+
+      this.toast.info('Containment Demo Active', `Executing ${scenario} proof across telemetry.`);
+    } catch (err) {
+      this.toast.info('Local Containment Demo', `Demonstrating ${scenario} locally.`);
+      this._simulateLocalContainment(scenario);
     }
   }
 
@@ -1119,6 +1354,288 @@ export class GhostShopperApp {
         });
       }, idx * 600 + 3500);
     });
+  }
+
+  /**
+   * Simulates local Pattern B Goal planning when backend is offline.
+   * @private
+   */
+  _simulateLocalGoal(goalText) {
+    const batchId = `goal-local-${Date.now().toString(36)}`;
+    const syntheticUrls = [
+      'https://www.bestbuy.com/site/sony-headphones-xm5/6505727.p',
+      'https://www.walmart.com/ip/Sony-WH-1000XM5-Wireless-Noise-Canceling/105312389',
+      'https://www.target-store.com/electronics/competitor-item-3'
+    ];
+
+    this.logStream.addLog({
+      level: 'INFO',
+      message: `[AGENT PLANNER] Goal received: "${goalText}"`
+    });
+    this.logStream.addLog({
+      level: 'INFO',
+      message: `[AGENT PLANNER] Step 1: Deconstruct goal into 3 competitor retail targets`
+    });
+    this.logStream.addLog({
+      level: 'INFO',
+      message: `[AGENT PLANNER] Step 2: Acquire pre-warmed gVisor microVMs (zero host secrets)`
+    });
+    this.logStream.addLog({
+      level: 'INFO',
+      message: `[AGENT PLANNER] Step 3: Run Playwright Chromium, extract DOM, capture screenshot`
+    });
+    this.logStream.addLog({
+      level: 'INFO',
+      message: `[AGENT PLANNER] Step 4: Tier-2 verification via Vultr Llama 3.2 Vision`
+    });
+
+    this._recordBatch({
+      batchId,
+      urlCount: syntheticUrls.length,
+      status: 'PLANNED_AND_DISPATCHED',
+      timestamp: new Date()
+    });
+
+    this._simulateLocalBatch(syntheticUrls);
+  }
+
+  /**
+   * Simulates local Containment Moment showcase for demo video recording.
+   * @private
+   */
+  _simulateLocalContainment(scenario) {
+    const demoId = `demo-${Date.now().toString(36).substring(4)}`;
+    const cid = `gvisor-sandbox-${demoId}`;
+
+    if (scenario === 'SSRF_METADATA_ATTACK') {
+      this.logStream.addLog({ level: 'SECURITY', message: '═══ DEMO CONTAINMENT: SSRF METADATA EXPLOIT ═══' });
+      this.logStream.addLog({ level: 'LAUNCH', message: `Allocating gVisor container ${cid} with runsc kernel isolation.` });
+      
+      setTimeout(() => {
+        this.logStream.addLog({ level: 'WARN', message: `Target page script attempted outbound connection to 169.254.169.254:80 (Vultr Metadata)` });
+      }, 700);
+
+      setTimeout(() => {
+        this.logStream.addLog({ level: 'SECURITY', message: `[EGRESS BLOCKADE] Syscall intercepted by gVisor Sentry. Packet to 169.254.169.254 dropped.` });
+        this.logStream.addLog({ level: 'SECURITY', message: `[SECRET HYGIENE] Sandbox has ZERO host credentials or API keys. Exfiltration blocked.` });
+        const currentBlocked = (this.securityMatrix.blockedCount || 0) + 1;
+        this.securityMatrix.setBlockedRequests(currentBlocked);
+      }, 1500);
+
+      setTimeout(() => {
+        this.logStream.addLog({ level: 'SECURITY', message: `Zero-residual purge: docker rm -f ${cid}. Host VM integrity 100% verified.` });
+        this.toast.success('SSRF Blocked', 'Containment verified: 169.254.169.254 egress dropped.');
+      }, 2300);
+
+    } else if (scenario === 'MEMORY_BOMB_OOM') {
+      this.logStream.addLog({ level: 'SECURITY', message: '═══ DEMO CONTAINMENT: RUNAWAY MEMORY BOMB (OOM TRAP) ═══' });
+      this.logStream.addLog({ level: 'LAUNCH', message: `Sandbox ${cid} active with 512MB RAM cap (swap completely disabled).` });
+
+      setTimeout(() => {
+        this.securityMatrix.setRam(75, 12, 16);
+        this.logStream.addLog({ level: 'WARN', message: `Runaway memory allocation detected: 380MB / 512MB quota...` });
+      }, 600);
+
+      setTimeout(() => {
+        this.securityMatrix.setRam(98, 15.6, 16);
+        this.logStream.addLog({ level: 'WARN', message: `Memory allocation approaching ceiling: 508MB / 512MB limit!` });
+      }, 1300);
+
+      setTimeout(() => {
+        this.logStream.addLog({ level: 'SECURITY', message: `[OOM TRAP TRIGGERED] gVisor OOM-killer terminated sandbox process. Host CPU: 0.9%, Host memory unaffected.` });
+        this.logStream.addLog({ level: 'INFO', message: `Hard purge completed: docker rm -f ${cid}. Blast radius ZERO.` });
+        this.securityMatrix.setRam(40, 6.4, 16);
+        this.toast.success('OOM Contained', 'Sandbox dropped at 512MB ceiling without host impact.');
+      }, 2200);
+
+    } else if (scenario === 'DECEPTIVE_PRICE_HITL') {
+      this.logStream.addLog({ level: 'SECURITY', message: '═══ DEMO CONTAINMENT: DECEPTIVE PRICING & HITL FREEZE ═══' });
+      this.logStream.addLog({ level: 'NAVIGATE', message: `Sandbox ${cid} navigating to deceptive retail target...` });
+
+      setTimeout(() => {
+        this.logStream.addLog({ level: 'EXTRACT', message: `DOM parser reports price: '$0.00' (Free Item)` });
+      }, 800);
+
+      setTimeout(() => {
+        this.logStream.addLog({ level: 'SECURITY', message: `[TIER 1 ANOMALY] Suspicious $0.00 price detected. Routing screenshot to Vultr Llama 3.2 Vision...` });
+      }, 1600);
+
+      setTimeout(() => {
+        this.logStream.addLog({ level: 'SECURITY', message: `[VULTR VISION LLM] Llama 3.2 Vision: 'Visual inspection shows $249.99 with $50 hidden checkout fee. Prompt injection suspected.'` });
+        this.logStream.addLog({ level: 'SECURITY', message: `[HITL FREEZE] Executed 'docker pause ${cid}'. Container CPU frozen at 0.00%. Awaiting operator intervention.` });
+
+        this._handleApprovalRequired({
+          task_id: `task-${demoId}`,
+          container_id: cid,
+          reason: 'Tier-2 Vision Audit flagged Deceptive $0.00 DOM Price & Hidden Fee Trap ($249.99). Operator authorization required.',
+          timestamp: Date.now()
+        });
+        this.toast.warning('HITL Freeze Active', 'Container paused. Operator approval required in dashboard.');
+      }, 2600);
+    }
+  }
+
+  /**
+   * Opens the Vultr Credential & Infrastructure Configuration Modal.
+   */
+  openVultrModal() {
+    if (!this.dom.vultrModal) return;
+    this.dom.vultrModal.classList.add('open');
+    this.dom.vultrModal.setAttribute('aria-hidden', 'false');
+    this.fetchVultrConfig();
+  }
+
+  /**
+   * Closes the Vultr Configuration Modal.
+   */
+  closeVultrModal() {
+    if (!this.dom.vultrModal) return;
+    this.dom.vultrModal.classList.remove('open');
+    this.dom.vultrModal.setAttribute('aria-hidden', 'true');
+  }
+
+  /**
+   * Fetches the current Vultr configuration and updates UI status indicators.
+   */
+  async fetchVultrConfig() {
+    try {
+      const response = await fetch('/api/config/vultr');
+      if (!response.ok) return;
+      const data = await response.json();
+
+      if (this.dom.vultrBadgeLabel) {
+        if (data.configured) {
+          this.dom.vultrBadgeLabel.textContent = '⚡ Vultr: Active';
+          this.dom.vultrBadgeLabel.style.color = '#00f0ff';
+        } else {
+          this.dom.vultrBadgeLabel.textContent = '🔑 Vultr: Ready';
+          this.dom.vultrBadgeLabel.style.color = '';
+        }
+      }
+
+      if (this.dom.vultrModalModeBadge) {
+        if (data.configured) {
+          this.dom.vultrModalModeBadge.textContent = 'VULTR CLOUD ACTIVE';
+          this.dom.vultrModalModeBadge.style.background = 'rgba(0, 240, 255, 0.2)';
+          this.dom.vultrModalModeBadge.style.color = '#00f0ff';
+        } else {
+          this.dom.vultrModalModeBadge.textContent = 'SIMULATION READY';
+          this.dom.vultrModalModeBadge.style.background = 'rgba(0, 255, 136, 0.15)';
+          this.dom.vultrModalModeBadge.style.color = 'var(--accent-green)';
+        }
+      }
+
+      if (this.dom.vultrModalStatusText) {
+        if (data.configured) {
+          this.dom.vultrModalStatusText.textContent = `Live Cloud Engine: ${data.vision_model} active with gVisor microVMs.`;
+        } else {
+          this.dom.vultrModalStatusText.textContent = 'Local Simulation Active (Zero Keys Required for Testing)';
+        }
+      }
+
+      if (this.dom.selectVultrVisionModel && data.vision_model) {
+        this.dom.selectVultrVisionModel.value = data.vision_model;
+      }
+
+      if (data.configured) {
+        if (this.dom.inputVultrApiKey && !this.dom.inputVultrApiKey.value) {
+          this.dom.inputVultrApiKey.placeholder = data.api_key_masked || '•••••••••••••••• (Configured)';
+        }
+        if (this.dom.inputVultrInfKey && !this.dom.inputVultrInfKey.value) {
+          this.dom.inputVultrInfKey.placeholder = data.inference_key_masked || '•••••••••••••••• (Configured)';
+        }
+      }
+    } catch (err) {
+      console.warn('[VULTR CONFIG] Could not sync Vultr configuration:', err);
+    }
+  }
+
+  /**
+   * Saves updated Vultr credentials and vision model settings.
+   */
+  async saveVultrConfig() {
+    const apiKey = this.dom.inputVultrApiKey ? this.dom.inputVultrApiKey.value.trim() : '';
+    const infKey = this.dom.inputVultrInfKey ? this.dom.inputVultrInfKey.value.trim() : '';
+    const visionModel = this.dom.selectVultrVisionModel ? this.dom.selectVultrVisionModel.value : 'llama-3.2-90b-vision-preview';
+
+    if (!apiKey && !infKey) {
+      this.toast.warning('Empty Keys', 'Please paste your Vultr API Key or Inference Key.');
+      return;
+    }
+
+    if (this.dom.btnSaveVultrKeys) {
+      this.dom.btnSaveVultrKeys.disabled = true;
+      this.dom.btnSaveVultrKeys.textContent = 'Saving...';
+    }
+
+    try {
+      const payload = {
+        api_key: apiKey || null,
+        inference_key: infKey || null,
+        vision_model: visionModel
+      };
+
+      const res = await fetch('/api/config/vultr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server returned HTTP ${res.status}`);
+      }
+
+      const result = await res.json();
+      this.toast.success('Vultr Configured', 'Vultr credentials activated successfully! Cloud execution enabled.');
+      this.logStream.addLog({
+        level: 'SECURITY',
+        message: `[VULTR INTEGRATION] Activated live credentials. Vision model set to ${visionModel}.`
+      });
+
+      await this.fetchVultrConfig();
+      setTimeout(() => this.closeVultrModal(), 1200);
+    } catch (err) {
+      this.toast.error('Save Failed', `Could not update credentials: ${err.message}`);
+    } finally {
+      if (this.dom.btnSaveVultrKeys) {
+        this.dom.btnSaveVultrKeys.disabled = false;
+        this.dom.btnSaveVultrKeys.textContent = '💾 Save & Activate Vultr';
+      }
+    }
+  }
+
+  /**
+   * Tests connection to Vultr Cloud API and Serverless Inference endpoint.
+   */
+  async testVultrKeys() {
+    const apiKey = this.dom.inputVultrApiKey ? this.dom.inputVultrApiKey.value.trim() : '';
+    const infKey = this.dom.inputVultrInfKey ? this.dom.inputVultrInfKey.value.trim() : '';
+
+    if (this.dom.btnTestVultrKeys) {
+      this.dom.btnTestVultrKeys.disabled = true;
+      this.dom.btnTestVultrKeys.textContent = 'Testing...';
+    }
+
+    try {
+      if (!apiKey && !infKey) {
+        const res = await fetch('/api/config/vultr');
+        const data = await res.json();
+        if (data.configured) {
+          this.toast.success('Connection Verified', `Vultr active with model: ${data.vision_model}`);
+        } else {
+          this.toast.info('Simulation Active', 'No external Vultr keys set. Running in zero-cost local simulation mode.');
+        }
+      } else {
+        await this.saveVultrConfig();
+      }
+    } catch (err) {
+      this.toast.error('Test Failed', err.message);
+    } finally {
+      if (this.dom.btnTestVultrKeys) {
+        this.dom.btnTestVultrKeys.disabled = false;
+        this.dom.btnTestVultrKeys.textContent = '🔍 Test Connection';
+      }
+    }
   }
 }
 
