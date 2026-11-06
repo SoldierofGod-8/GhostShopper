@@ -33,6 +33,7 @@ class Settings(BaseSettings):
         sandbox_memory_limit: Maximum RAM limit string for each sandbox (e.g. '512m').
         sandbox_timeout_seconds: Execution watchdog timeout in seconds.
         docker_runtime: Docker OCI runtime engine (e.g. 'runsc' for gVisor).
+        vultr_api_key: Vultr Cloud account API key used to provision Cloud Compute instances.
         vultr_inference_api_key: API authorization key for Vultr Serverless Inference.
         vultr_inference_endpoint: Target URL for Vultr inference chat completions.
         vultr_vision_model: Vision LLM model identifier used for Tier-2 price verification.
@@ -77,6 +78,10 @@ class Settings(BaseSettings):
     docker_runtime: str = Field(
         default="runsc",
         description="Docker runtime engine (e.g. runsc for gVisor sandboxing)"
+    )
+    vultr_api_key: str = Field(
+        default="",
+        description="Vultr Cloud account API key (used to provision Cloud Compute instances)"
     )
     vultr_inference_api_key: str = Field(
         default="",

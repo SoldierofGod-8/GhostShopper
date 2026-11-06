@@ -142,6 +142,33 @@ BASE_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 WORKSPACE_DIR = Path(settings.workspace_dir)
 
+
+def _resolve_workspace_dir(configured: Path) -> Path:
+    """
+    Return a workspace directory that is guaranteed to be creatable.
+
+    ``settings.workspace_dir`` defaults to the container path ``/app/workspace``.
+    When the orchestrator runs directly on a host (local development, CI, or a
+    judge following the README quick start) that path is either unwritable or
+    outside the checkout, which previously raised ``PermissionError`` at import
+    time and stopped the app before it could boot. In that case fall back to a
+    ``workspace/`` directory next to this file.
+    """
+    try:
+        os.makedirs(str(configured), exist_ok=True)
+        return configured
+    except OSError as exc:  # PermissionError, ReadOnlyFilesystemError, etc.
+        fallback = BASE_DIR / "workspace"
+        os.makedirs(str(fallback), exist_ok=True)
+        print(
+            f"[config] workspace_dir '{configured}' is not usable ({exc}); "
+            f"falling back to '{fallback}'"
+        )
+        return fallback
+
+
+WORKSPACE_DIR = _resolve_workspace_dir(WORKSPACE_DIR)
+
 # Ensure workspace host directory exists
 os.makedirs(str(WORKSPACE_DIR), exist_ok=True)
 
@@ -1435,7 +1462,7 @@ async def get_vultr_config() -> VultrConfigResponse:
     """
     Retrieve current Vultr integration state, masked keys, and execution mode.
     """
-    env_account_key = os.environ.get("VULTR_API_KEY", "")
+    env_account_key = os.environ.get("VULTR_API_KEY", "") or settings.vultr_api_key
     has_account_key = bool(env_account_key and env_account_key != "your_vultr_api_key_here")
     has_inference_key = bool(settings.vultr_inference_api_key and settings.vultr_inference_api_key != "your_vultr_api_key_here")
 
@@ -1484,6 +1511,7 @@ async def update_vultr_config(payload: VultrConfigRequest) -> VultrConfigRespons
     if raw_api_key is not None:
         new_key = raw_api_key.strip()
         os.environ["VULTR_API_KEY"] = new_key
+        settings.vultr_api_key = new_key
         _upsert_env_line("VULTR_API_KEY", new_key)
         
         if new_key:
