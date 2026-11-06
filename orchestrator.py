@@ -176,6 +176,13 @@ def _resolve_workspace_dir(configured: Path) -> Path:
 
 WORKSPACE_DIR = _resolve_workspace_dir(WORKSPACE_DIR)
 
+# Propagate the resolved path back onto the settings singleton. SandboxManager
+# reads config.workspace_dir to build the container's host bind mount, and the
+# raw setting still holds the container default (/app/workspace), which is not
+# creatable on a host. Without this the bind mount points at a path that does
+# not exist and captured screenshots never reach /api/screenshot.
+settings.workspace_dir = str(WORKSPACE_DIR)
+
 # Ensure workspace host directory exists
 os.makedirs(str(WORKSPACE_DIR), exist_ok=True)
 
@@ -1280,6 +1287,103 @@ def _generate_competitor_svg(
 </svg>"""
 
 
+async def _capture_live_screenshot(
+    task_id: str,
+    target_url: str,
+    task_dir: Path
+) -> Optional[Path]:
+    """
+    Capture a REAL screenshot of ``target_url`` with a sandboxed browser.
+
+    Dispatches the existing Playwright worker (scrape.js) inside a gVisor
+    container, waits for the screenshot artifact to appear in the shared
+    workspace, then unconditionally destroys the container.
+
+    Returns the path to screenshot.png, or None when a live capture was not
+    possible (Docker unavailable, feature disabled, timeout, or the page would
+    not load). Callers must treat None as "fall back to a synthetic placeholder
+    and label it as such" — never as "assume it worked".
+    """
+    if not settings.enable_live_capture:
+        return None
+
+    if sandbox_manager.client is None:
+        return None
+
+    if not target_url or not target_url.lower().startswith(("http://", "https://")):
+        return None
+
+    os.makedirs(str(task_dir), exist_ok=True)
+    screenshot = task_dir / "screenshot.png"
+    container_id: Optional[str] = None
+
+    try:
+        container_id = await sandbox_manager.create_sandbox(
+            task_id=task_id,
+            target_url=target_url
+        )
+        await sandbox_manager.start_sandbox(container_id)
+
+        def _exec_scraper() -> str:
+            assert sandbox_manager.client is not None
+            instance = sandbox_manager.client.api.exec_create(
+                container=container_id,
+                cmd="node /app/scrape.js",
+                environment={
+                    "TARGET_URL": target_url,
+                    "TASK_ID": task_id,
+                    # Container-side mount point; bound to the host workspace dir.
+                    "WORKSPACE_DIR": "/app/workspace",
+                    "TIMEOUT_MS": str(max(int((settings.live_capture_timeout_seconds - 5) * 1000), 5000)),
+                },
+                workdir="/app"
+            )
+            sandbox_manager.client.api.exec_start(instance["Id"], detach=True)
+            return instance["Id"]
+
+        await asyncio.to_thread(_exec_scraper)
+
+        deadline = asyncio.get_event_loop().time() + settings.live_capture_timeout_seconds
+        while asyncio.get_event_loop().time() < deadline:
+            if screenshot.is_file() and screenshot.stat().st_size > 0:
+                # Give the writer a moment to flush before the container is torn down.
+                await asyncio.sleep(0.3)
+                if screenshot.stat().st_size > 0:
+                    await broadcast_log(
+                        "SECURITY",
+                        f"[LIVE CAPTURE] Real screenshot of {target_url} captured in sandbox {container_id[:12]}.",
+                        task_id=task_id
+                    )
+                    return screenshot
+            await asyncio.sleep(0.5)
+
+        logger.warning("Live capture timed out for %s after %ss", target_url, settings.live_capture_timeout_seconds)
+        await broadcast_log(
+            "WARN",
+            f"[LIVE CAPTURE] Timed out capturing {target_url}; falling back to a labelled placeholder.",
+            task_id=task_id
+        )
+        return None
+
+    except Exception as exc:
+        logger.warning("Live capture failed for %s: %s", target_url, exc)
+        await broadcast_log(
+            "WARN",
+            f"[LIVE CAPTURE] Could not capture {target_url} ({exc}); falling back to a labelled placeholder.",
+            task_id=task_id
+        )
+        return None
+
+    finally:
+        # Lifecycle discipline: the sandbox is destroyed whether the capture
+        # succeeded, failed, or timed out. No session state survives.
+        if container_id:
+            try:
+                await sandbox_manager.purge_sandbox(container_id)
+            except Exception as purge_err:
+                logger.warning("Failed to purge capture sandbox %s: %s", container_id[:12], purge_err)
+
+
 def _price_band(prices: List[float]) -> tuple:
     """
     Return (median, lower_bound, upper_bound) for a set of competitor prices.
@@ -1460,24 +1564,35 @@ Return ONLY a valid JSON object in this exact structure:
         task_dir = workspace_root / tid
         task_dir.mkdir(parents=True, exist_ok=True)
 
-        # Generate custom branded SVG screenshot
-        svg_content = _generate_competitor_svg(
-            store=store_name,
-            product=product_title,
-            price=price,
-            original_price=orig_price,
-            url=item_url,
-            in_stock=in_stock,
-            shipping=shipping
+        # Prefer a REAL capture taken from the live page by a sandboxed browser.
+        # Only when that is genuinely unavailable do we fall back to a generated
+        # placeholder — and then it is labelled synthetic all the way to the UI.
+        live_path = await _capture_live_screenshot(
+            task_id=tid,
+            target_url=item_url,
+            task_dir=task_dir
         )
 
-        svg_path = task_dir / "screenshot.svg"
-        await _async_write_text(svg_path, svg_content)
-        # NB: this deliberately does NOT also write the SVG markup to screenshot.png.
-        # Doing so produced a file whose name promised a raster image but whose
-        # bytes were XML; it only ever "worked" because /api/screenshot sniffs the
-        # content for "<svg". get_screenshot() resolves screenshot.svg first, so
-        # nothing needs the decoy file.
+        if live_path is not None:
+            artifact_path = live_path
+            screenshot_kind = "live"
+        else:
+            svg_content = _generate_competitor_svg(
+                store=store_name,
+                product=product_title,
+                price=price,
+                original_price=orig_price,
+                url=item_url,
+                in_stock=in_stock,
+                shipping=shipping
+            )
+            artifact_path = task_dir / "screenshot.svg"
+            await _async_write_text(artifact_path, svg_content)
+            screenshot_kind = "synthetic"
+            # NB: deliberately does NOT also write the SVG markup to screenshot.png.
+            # That produced a file whose name promised a raster image but whose bytes
+            # were XML; it only ever "worked" because /api/screenshot sniffs the
+            # content for "<svg". get_screenshot() resolves screenshot.svg first.
 
         # Write output.json
         output_payload = {
@@ -1519,7 +1634,7 @@ Return ONLY a valid JSON object in this exact structure:
             product_title=f"{product_title} ({store_name})",
             state=SandboxState.COMPLETED,
             price_data=price_data,
-            screenshot_path=str(svg_path),
+            screenshot_path=str(artifact_path),
             started_at=datetime.now(timezone.utc),
             completed_at=datetime.now(timezone.utc)
         )
@@ -1540,10 +1655,9 @@ Return ONLY a valid JSON object in this exact structure:
             rating=rating,
             screenshot_url=f"/api/screenshot/{tid}",
             task_id=tid,
-            # Honest provenance: this capture is generated locally from the quote
-            # data, not taken from the live retailer page. The UI labels it as such
-            # so a synthetic proof is never mistaken for a real one.
-            screenshot_kind="synthetic"
+            # Provenance flows from what actually happened above: "live" only when a
+            # sandboxed browser really captured the page, "synthetic" when it did not.
+            screenshot_kind=screenshot_kind
         )
         competitor_quotes.append(quote)
 

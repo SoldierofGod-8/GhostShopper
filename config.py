@@ -107,6 +107,19 @@ class Settings(BaseSettings):
         default="ghost-shopper-sandbox:latest",
         description="Docker image tag used for scraping sandboxes"
     )
+    enable_live_capture: bool = Field(
+        default=True,
+        description=(
+            "When True, /api/search dispatches a real sandboxed browser to each "
+            "competitor URL and captures a genuine screenshot. Falls back to a "
+            "generated placeholder when Docker is unavailable. Disable for fast demos."
+        )
+    )
+    live_capture_timeout_seconds: int = Field(
+        default=45,
+        gt=0,
+        description="Wall-clock budget for a single live screenshot capture before giving up"
+    )
     ghost_network: str = Field(
         default="ghost-net",
         description="Docker network name used for sandbox isolation"
