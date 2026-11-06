@@ -130,6 +130,17 @@ export class GhostShopperApp {
       compMarginBadge: document.getElementById('comp-margin-badge'),
       compCardsGrid: document.getElementById('comp-cards-grid'),
       compRationaleText: document.getElementById('comp-rationale-text'),
+
+      // Market price distribution (median + interquartile band)
+      compMedianPrice: document.getElementById('comp-median-price'),
+      compLowerBound: document.getElementById('comp-lower-bound'),
+      compUpperBound: document.getElementById('comp-upper-bound'),
+      compBandMin: document.getElementById('comp-band-min'),
+      compBandMax: document.getElementById('comp-band-max'),
+      compBandIqr: document.getElementById('comp-band-iqr'),
+      compBandWhisker: document.getElementById('comp-band-whisker'),
+      compBandMarker: document.getElementById('comp-band-marker'),
+      compBandNote: document.getElementById('comp-band-note'),
       compTimestamp: document.getElementById('comparison-timestamp'),
       chkHeroAmazon: document.getElementById('chk-hero-amazon'),
       chkHeroBestbuy: document.getElementById('chk-hero-bestbuy'),
@@ -810,6 +821,87 @@ export class GhostShopperApp {
   }
 
   /**
+   * Renders the market price distribution: median plus the interquartile band,
+   * with a whisker across the full observed range.
+   *
+   * Falls back to client-side computation when the backend does not supply the
+   * fields, so the panel degrades instead of showing dashes.
+   * @param {Object} data
+   */
+  renderPriceBand(data) {
+    if (!data) return;
+
+    const quotes = Array.isArray(data.competitor_quotes) ? data.competitor_quotes : [];
+    const prices = quotes.map((q) => Number(q.price)).filter((p) => Number.isFinite(p) && p > 0);
+
+    // Prefer server-computed figures; derive them here only as a fallback.
+    let median = data.median_price;
+    let lower = data.price_lower_bound;
+    let upper = data.price_upper_bound;
+
+    if (prices.length > 0 && (median == null || lower == null || upper == null)) {
+      const sorted = [...prices].sort((a, b) => a - b);
+      const mid = Math.floor(sorted.length / 2);
+      median = sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+      lower = sorted[0];
+      upper = sorted[sorted.length - 1];
+    }
+
+    const fmt = (v) => (Number.isFinite(Number(v)) ? `$${Number(v).toFixed(2)}` : '--');
+
+    if (this.dom.compMedianPrice) this.dom.compMedianPrice.textContent = fmt(median);
+    if (this.dom.compLowerBound) this.dom.compLowerBound.textContent = fmt(lower);
+    if (this.dom.compUpperBound) this.dom.compUpperBound.textContent = fmt(upper);
+
+    const min = Number(data.lowest_price != null ? data.lowest_price : Math.min(...prices));
+    const max = Number(data.highest_price != null ? data.highest_price : Math.max(...prices));
+
+    if (this.dom.compBandMin) this.dom.compBandMin.textContent = fmt(min);
+    if (this.dom.compBandMax) this.dom.compBandMax.textContent = fmt(max);
+
+    // Be explicit when the sample is too small for a real quartile split.
+    if (this.dom.compBandNote) {
+      this.dom.compBandNote.textContent = prices.length >= 4
+        ? 'Median with interquartile range across verified quotes'
+        : `Fewer than 4 quotes — band shows the full observed range, not quartiles`;
+    }
+
+    const span = max - min;
+    if (!Number.isFinite(span) || span <= 0) {
+      // All quotes identical: draw a single centred marker rather than dividing by zero.
+      if (this.dom.compBandIqr) {
+        this.dom.compBandIqr.style.left = '48%';
+        this.dom.compBandIqr.style.width = '4%';
+      }
+      if (this.dom.compBandMarker) this.dom.compBandMarker.style.left = '50%';
+      if (this.dom.compBandWhisker) {
+        this.dom.compBandWhisker.style.left = '50%';
+        this.dom.compBandWhisker.style.width = '0%';
+      }
+      return;
+    }
+
+    const pct = (v) => {
+      const p = ((Number(v) - min) / span) * 100;
+      return Math.max(0, Math.min(100, p));
+    };
+
+    if (this.dom.compBandIqr) {
+      const l = pct(lower);
+      const r = pct(upper);
+      this.dom.compBandIqr.style.left = `${l}%`;
+      this.dom.compBandIqr.style.width = `${Math.max(r - l, 1.5)}%`;
+    }
+
+    if (this.dom.compBandMarker) this.dom.compBandMarker.style.left = `${pct(median)}%`;
+
+    if (this.dom.compBandWhisker) {
+      this.dom.compBandWhisker.style.left = '0%';
+      this.dom.compBandWhisker.style.width = '100%';
+    }
+  }
+
+  /**
    * Renders the structured Dropshipper Comparison Matrix on the UI.
    * @param {Object} data 
    */
@@ -832,6 +924,8 @@ export class GhostShopperApp {
     if (this.dom.compTimestamp) {
       this.dom.compTimestamp.textContent = `Updated ${new Date().toLocaleTimeString()}`;
     }
+
+    this.renderPriceBand(data);
 
     // Find lowest store name
     if (this.dom.compLowestStore && data.competitor_quotes && data.competitor_quotes.length > 0) {
@@ -867,10 +961,30 @@ export class GhostShopperApp {
           ? `<span style="color: var(--accent-green); font-weight: 600;">● In Stock</span>`
           : `<span style="color: var(--accent-orange); font-weight: 600;">● Backordered</span>`;
 
+        // Provenance must be visible on the card. A synthetic placeholder and a
+        // real browser capture must never look the same to the person reading it.
+        const isLiveCapture = quote.screenshot_kind === 'live';
+        const provenanceClass = isLiveCapture ? 'live' : 'synthetic';
+        const provenanceLabel = isLiveCapture ? 'Live capture' : 'Simulated';
+        const provenanceTitle = isLiveCapture
+          ? 'Screenshot captured from the live retailer page by a sandboxed browser'
+          : 'Placeholder generated from quote data — no real page was captured';
+
+        const shotUrl = quote.screenshot_url || '';
+        const thumbHtml = shotUrl
+          ? `<button class="store-card-shot ${provenanceClass}" type="button"
+                     title="${escapeHtml(provenanceTitle)}" aria-label="View ${escapeHtml(quote.store)} screenshot">
+               <img src="${escapeHtml(shotUrl)}" alt="Screenshot of the ${escapeHtml(quote.store)} listing for ${escapeHtml(quote.product_title || quote.store)}" loading="lazy">
+               <span class="store-card-shot-tag">${provenanceLabel}</span>
+             </button>`
+          : '';
+
         card.innerHTML = `
           <div class="store-card-header">
             <span class="store-badge ${badgeClass}">${escapeHtml(quote.store)}</span>
-            <span style="font-size: 0.70rem; color: var(--accent-green); font-family: monospace;">Verified via Vultr</span>
+            <span class="store-card-provenance ${provenanceClass}" title="${escapeHtml(provenanceTitle)}">
+              ${provenanceLabel}
+            </span>
           </div>
           <div class="store-card-price">
             $${Number(quote.price).toFixed(2)}
@@ -880,6 +994,7 @@ export class GhostShopperApp {
             <div>${stockHtml} • ${escapeHtml(quote.condition || 'New')}</div>
             <div style="color: var(--text-muted);">${escapeHtml(quote.shipping || 'Free Standard Delivery')}</div>
           </div>
+          ${thumbHtml}
           <div class="store-card-footer">
             <button class="btn-card-action preview" type="button">
               📷 View DOM Snapshot
@@ -893,6 +1008,18 @@ export class GhostShopperApp {
         const btnPreview = card.querySelector('.btn-card-action.preview');
         if (btnPreview) {
           btnPreview.addEventListener('click', () => {
+            this.openLightbox({
+              image: quote.screenshot_url,
+              url: quote.url,
+              containerId: quote.store
+            });
+          });
+        }
+
+        // The inline thumbnail opens the same lightbox as the button.
+        const btnShot = card.querySelector('.store-card-shot');
+        if (btnShot) {
+          btnShot.addEventListener('click', () => {
             this.openLightbox({
               image: quote.screenshot_url,
               url: quote.url,
