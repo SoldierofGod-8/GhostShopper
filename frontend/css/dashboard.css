@@ -2656,3 +2656,228 @@ body::after {
     scroll-behavior: auto;
   }
 }
+
+/* ==========================================================================
+   MARKET PRICE DISTRIBUTION — median + interquartile band
+   ========================================================================== */
+
+.price-band {
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px 18px 14px 18px;
+  margin-bottom: 24px;
+}
+
+.price-band-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.price-band-title {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.price-band-note {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.price-band-figures {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.price-band-fig {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.price-band-fig.primary {
+  border-color: rgba(var(--accent-cyan-rgb), 0.45);
+  background: rgba(var(--accent-cyan-rgb), 0.06);
+}
+
+.price-band-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.price-band-value {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--text-primary);
+}
+
+.price-band-value.low    { color: var(--accent-green); }
+.price-band-value.median { color: var(--accent-cyan); }
+.price-band-value.high   { color: var(--accent-orange); }
+
+.price-band-sub {
+  font-size: 0.66rem;
+  color: var(--text-muted);
+}
+
+/* Range track: full-range whisker with the IQR box and median marker on top */
+.price-band-track {
+  position: relative;
+  height: 26px;
+  margin: 0 2px;
+}
+
+.price-band-whisker {
+  position: absolute;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
+  background: var(--border-medium);
+  border-radius: var(--radius-full);
+}
+
+.price-band-iqr {
+  position: absolute;
+  top: 50%;
+  height: 14px;
+  transform: translateY(-50%);
+  background: rgba(var(--accent-cyan-rgb), 0.18);
+  border: 1px solid rgba(var(--accent-cyan-rgb), 0.45);
+  border-radius: var(--radius-sm);
+  transition: left var(--transition-normal), width var(--transition-normal);
+}
+
+.price-band-marker {
+  position: absolute;
+  top: 50%;
+  width: 3px;
+  height: 24px;
+  transform: translate(-50%, -50%);
+  background: var(--accent-cyan);
+  border-radius: var(--radius-full);
+  box-shadow: var(--glow-cyan);
+  transition: left var(--transition-normal);
+}
+
+.price-band-scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   COMPETITOR CARD SCREENSHOTS + PROVENANCE
+   A synthetic placeholder must never be visually indistinguishable from a
+   real browser capture.
+   ========================================================================== */
+
+.store-card-provenance {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.store-card-provenance.live {
+  color: var(--accent-green);
+  background: rgba(var(--accent-green-rgb), 0.12);
+  border-color: rgba(var(--accent-green-rgb), 0.4);
+}
+
+.store-card-provenance.synthetic {
+  color: var(--accent-yellow);
+  background: rgba(251, 191, 36, 0.1);
+  border-color: rgba(251, 191, 36, 0.35);
+}
+
+.store-card-shot {
+  display: block;
+  position: relative;
+  width: 100%;
+  padding: 0;
+  margin: 10px 0 4px 0;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.store-card-shot:hover {
+  border-color: rgba(var(--accent-cyan-rgb), 0.5);
+  transform: translateY(-1px);
+}
+
+.store-card-shot img {
+  display: block;
+  width: 100%;
+  height: 92px;
+  object-fit: cover;
+  object-position: top center;
+  background: var(--bg-input);
+}
+
+/* Dim and hatch synthetic captures so they cannot be mistaken for real ones */
+.store-card-shot.synthetic img {
+  opacity: 0.72;
+  filter: saturate(0.75);
+}
+
+.store-card-shot-tag {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: rgba(10, 14, 23, 0.85);
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.store-card-shot.live .store-card-shot-tag {
+  color: var(--accent-green);
+}
+
+.store-card-shot.synthetic .store-card-shot-tag {
+  color: var(--accent-yellow);
+}
+
+@media (max-width: 760px) {
+  .price-band-figures {
+    grid-template-columns: 1fr;
+  }
+
+  .price-band-value {
+    font-size: 1.25rem;
+  }
+}

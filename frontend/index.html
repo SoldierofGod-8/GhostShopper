@@ -252,6 +252,49 @@
 
           </div>
 
+          <!-- Market price distribution: median with interquartile band.
+               The median is the honest central figure for repricing because one
+               outlier listing drags the mean but not the median. -->
+          <div class="price-band">
+            <div class="price-band-head">
+              <h3 class="price-band-title">Market Price Distribution</h3>
+              <span id="comp-band-note" class="price-band-note">
+                Median with interquartile range across verified quotes
+              </span>
+            </div>
+
+            <div class="price-band-figures">
+              <div class="price-band-fig">
+                <span class="price-band-label">Lower bound</span>
+                <span id="comp-lower-bound" class="price-band-value low">--</span>
+                <span class="price-band-sub">25th percentile</span>
+              </div>
+
+              <div class="price-band-fig primary">
+                <span class="price-band-label">Median</span>
+                <span id="comp-median-price" class="price-band-value median">--</span>
+                <span class="price-band-sub">50th percentile</span>
+              </div>
+
+              <div class="price-band-fig">
+                <span class="price-band-label">Upper bound</span>
+                <span id="comp-upper-bound" class="price-band-value high">--</span>
+                <span class="price-band-sub">75th percentile</span>
+              </div>
+            </div>
+
+            <!-- Visual range track: min ─ [Q1 ─ median ─ Q3] ─ max -->
+            <div class="price-band-track" id="comp-band-track">
+              <div class="price-band-whisker" id="comp-band-whisker"></div>
+              <div class="price-band-iqr" id="comp-band-iqr"></div>
+              <div class="price-band-marker" id="comp-band-marker" title="Median"></div>
+            </div>
+            <div class="price-band-scale">
+              <span id="comp-band-min" class="mono">--</span>
+              <span id="comp-band-max" class="mono">--</span>
+            </div>
+          </div>
+
           <!-- Competitor Cards Side-by-Side Grid -->
           <h3 style="font-size: 0.82rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 12px 0;">
             🏪 Verified Prices Across Competitors

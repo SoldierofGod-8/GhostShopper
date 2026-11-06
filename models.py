@@ -377,6 +377,14 @@ class CompetitorQuote(BaseModel):
     rating: Optional[float] = Field(default=4.7, description="Average customer rating out of 5.0")
     screenshot_url: Optional[str] = Field(default=None, description="API endpoint for DOM screenshot proof")
     task_id: Optional[str] = Field(default=None, description="Correlated gVisor inspection task ID")
+    screenshot_kind: str = Field(
+        default="synthetic",
+        description=(
+            "Provenance of screenshot_url. 'live' = captured from the real page by a "
+            "sandboxed browser; 'synthetic' = locally generated placeholder because no "
+            "real capture was available. The UI must label these differently."
+        )
+    )
 
 
 class ProductSearchRequest(BaseModel):
@@ -416,6 +424,18 @@ class ProductSearchResponse(BaseModel):
     lowest_price: float = Field(..., description="Lowest competitor price found across stores")
     highest_price: float = Field(..., description="Highest competitor price found across stores")
     average_price: float = Field(..., description="Average market price across competitors")
+    median_price: float = Field(
+        ...,
+        description="Median (50th percentile) competitor price — robust against a single outlier listing"
+    )
+    price_lower_bound: float = Field(
+        ...,
+        description="Lower bound of the central price band (25th percentile / Q1)"
+    )
+    price_upper_bound: float = Field(
+        ...,
+        description="Upper bound of the central price band (75th percentile / Q3)"
+    )
     recommended_dropship_price: float = Field(..., description="Optimal dropship retail price to win sales")
     estimated_supplier_cost: float = Field(..., description="Estimated wholesale supplier cost")
     estimated_profit_per_unit: float = Field(..., description="Gross profit dollars per unit sold")

@@ -19,6 +19,7 @@ import logging
 import os
 from pathlib import Path
 import re
+import statistics
 import sys
 from typing import Any, Dict, List, Optional, Union
 import uuid
@@ -1279,12 +1280,41 @@ def _generate_competitor_svg(
 </svg>"""
 
 
+def _price_band(prices: List[float]) -> tuple:
+    """
+    Return (median, lower_bound, upper_bound) for a set of competitor prices.
+
+    The median is the useful central figure for repricing because a single
+    outlier listing (a marketplace seller at 3x, or a clearance unit) drags the
+    mean but not the median.
+
+    Bounds are the interquartile range (Q1/Q3) when there are enough points to
+    compute one meaningfully. With fewer than four quotes there is no honest
+    quartile split, so the band falls back to the observed min/max rather than
+    inventing precision the sample cannot support.
+    """
+    if not prices:
+        return 0.0, 0.0, 0.0
+
+    if len(prices) == 1:
+        only = float(prices[0])
+        return only, only, only
+
+    median = round(float(statistics.median(prices)), 2)
+
+    if len(prices) < 4:
+        return median, round(float(min(prices)), 2), round(float(max(prices)), 2)
+
+    q1, _q2, q3 = statistics.quantiles(prices, n=4, method="inclusive")
+    return median, round(float(q1), 2), round(float(q3), 2)
+
+
 @app.post("/api/search", response_model=ProductSearchResponse)
 async def search_competitor_prices(request: ProductSearchRequest) -> ProductSearchResponse:
     """
     Direct Product Price Search for Dropshippers:
     Takes a product query and target stores, connects to Vultr Serverless Inference API,
-    retrieves real competitor prices, computes optimal dropship pricing & margins,
+    retrieves competitor prices, computes optimal dropship pricing & margins,
     provisions gVisor sandboxes to record DOM snapshots, and returns verified comparisons.
     """
     settings = get_settings()
@@ -1442,9 +1472,12 @@ Return ONLY a valid JSON object in this exact structure:
         )
 
         svg_path = task_dir / "screenshot.svg"
-        png_path = task_dir / "screenshot.png"
         await _async_write_text(svg_path, svg_content)
-        await _async_write_text(png_path, svg_content)
+        # NB: this deliberately does NOT also write the SVG markup to screenshot.png.
+        # Doing so produced a file whose name promised a raster image but whose
+        # bytes were XML; it only ever "worked" because /api/screenshot sniffs the
+        # content for "<svg". get_screenshot() resolves screenshot.svg first, so
+        # nothing needs the decoy file.
 
         # Write output.json
         output_payload = {
@@ -1506,7 +1539,11 @@ Return ONLY a valid JSON object in this exact structure:
             in_stock=in_stock,
             rating=rating,
             screenshot_url=f"/api/screenshot/{tid}",
-            task_id=tid
+            task_id=tid,
+            # Honest provenance: this capture is generated locally from the quote
+            # data, not taken from the live retailer page. The UI labels it as such
+            # so a synthetic proof is never mistaken for a real one.
+            screenshot_kind="synthetic"
         )
         competitor_quotes.append(quote)
 
@@ -1530,6 +1567,7 @@ Return ONLY a valid JSON object in this exact structure:
     lowest_p = min(all_prices) if all_prices else 49.99
     highest_p = max(all_prices) if all_prices else lowest_p
     avg_p = round(sum(all_prices) / len(all_prices), 2) if all_prices else lowest_p
+    median_p, lower_bound_p, upper_bound_p = _price_band(all_prices)
 
     rec_dropship_p = float(rec.get("dropship_price") or round(lowest_p - 2.0, 2))
     supp_cost = float(rec.get("estimated_supplier_cost") or round(lowest_p * (1 - target_margin), 2))
@@ -1546,6 +1584,9 @@ Return ONLY a valid JSON object in this exact structure:
         lowest_price=lowest_p,
         highest_price=highest_p,
         average_price=avg_p,
+        median_price=median_p,
+        price_lower_bound=lower_bound_p,
+        price_upper_bound=upper_bound_p,
         recommended_dropship_price=rec_dropship_p,
         estimated_supplier_cost=supp_cost,
         estimated_profit_per_unit=profit_unit,
