@@ -82,7 +82,7 @@ VULTR_INFERENCE_ENDPOINT={env_vars.get('VULTR_INFERENCE_ENDPOINT', 'https://api.
 VULTR_VISION_MODEL={env_vars.get('VULTR_VISION_MODEL', 'llama-3.2-90b-vision-preview')}
 
 # Network Security (Blocked Subnets & Cloud Metadata)
-BLOCKED_SUBNETS={env_vars.get('BLOCKED_SUBNETS', '10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,169.254.169.254/32')}
+BLOCKED_SUBNETS={env_vars.get('BLOCKED_SUBNETS', '10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,169.254.0.0/16,127.0.0.0/8,100.64.0.0/10')}
 
 # Storage Workspace
 WORKSPACE_DIR={env_vars.get('WORKSPACE_DIR', '/app/workspace')}

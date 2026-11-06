@@ -200,14 +200,23 @@ DOCKER_RUNTIME=runsc
 VULTR_INFERENCE_API_KEY=CHANGE_ME
 VULTR_INFERENCE_ENDPOINT=https://api.vultrinference.com/v1/chat/completions
 VULTR_VISION_MODEL=llama-3.2-90b-vision-preview
-BLOCKED_SUBNETS=10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,169.254.169.254/32
+BLOCKED_SUBNETS=10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,169.254.0.0/16,127.0.0.0/8,100.64.0.0/10
 WORKSPACE_DIR=/opt/ghost-shopper/workspace
 ENV
 
-# Block metadata endpoint at the host level (defense in depth)
-iptables -A OUTPUT -d 169.254.169.254 -j DROP || true
+echo "=== Ghost Shopper cloud-init ===" > /var/log/ghost-shopper-init.log
 
-echo "Ghost Shopper server provisioned successfully" > /var/log/ghost-shopper-init.log
+# Block the cloud metadata endpoint and all link-local space at the host level
+# (defense in depth). Deliberately logged rather than swallowed by '|| true':
+# a containment control that fails silently is indistinguishable from one that
+# works, which is exactly what we cannot afford in a containment demo.
+if iptables -A OUTPUT -d 169.254.0.0/16 -j DROP; then
+  echo "EGRESS_BLOCKADE=applied (169.254.0.0/16 OUTPUT DROP)" >> /var/log/ghost-shopper-init.log
+else
+  echo "EGRESS_BLOCKADE=FAILED - iptables rule NOT applied, containment incomplete" >> /var/log/ghost-shopper-init.log
+fi
+
+echo "Ghost Shopper server provisioned successfully" >> /var/log/ghost-shopper-init.log
 CLOUD_INIT
 )
 
