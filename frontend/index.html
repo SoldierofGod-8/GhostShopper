@@ -25,34 +25,24 @@
       <div class="header-top">
         <div class="brand-section">
           <div class="brand-icon">
-            <!-- Radar / Cyber Vision Icon -->
-            <svg viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 0 1-8 0"/>
             </svg>
           </div>
           <div class="brand-title-group">
-            <h1>
-              🔮 GHOST SHOPPER
-              <span class="brand-version">v2.5.0-SEC</span>
-            </h1>
-            <p class="brand-subtitle">Autonomous Competitor Price Intelligence Fleet for Dropshippers & AI Stores</p>
+            <h1>GhostShopper</h1>
+            <p class="brand-subtitle">Real-Time Competitor Price Intelligence for Dropshippers</p>
           </div>
         </div>
 
         <div class="header-controls">
-          <button id="btn-vultr-modal" class="btn btn-secondary btn-sm" title="Configure Vultr credentials & infrastructure (Nov 3rd)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
-            </svg>
-            <span id="vultr-badge-label">🔑 Vultr: Ready</span>
-          </button>
-          <button id="btn-toggle-demo" class="btn btn-secondary btn-sm" title="Toggle autonomous simulation mode for testing">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M8 5v14l11-7z"/>
-            </svg>
-            <span id="demo-mode-label">Simulation Mode</span>
-          </button>
-          <button id="btn-refresh-all" class="btn btn-secondary btn-sm" title="Force refresh system telemetry">
+          <div class="nav-status-pill">
+            <span class="nav-status-dot"></span>
+            <span>Live Price Feed Active</span>
+          </div>
+          <button id="btn-refresh-all" class="btn btn-secondary btn-sm" title="Refresh competitor pricing data">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
             </svg>
@@ -60,46 +50,15 @@
           </button>
         </div>
       </div>
-
-      <!-- Telemetry Status Bar -->
-      <div class="status-bar">
-        <div class="telemetry-item">
-          <span id="ws-indicator-dot" class="status-indicator-dot reconnecting"></span>
-          <span class="telemetry-label">Network Link:</span>
-          <span id="ws-status-text" class="telemetry-value accent-cyan">CONNECTING</span>
-        </div>
-
-        <div class="telemetry-item">
-          <span class="telemetry-label">Pool Availability:</span>
-          <span id="header-pool-status" class="telemetry-value accent-green">-- / -- READY</span>
-        </div>
-
-        <div class="telemetry-item">
-          <span class="telemetry-label">Active Missions:</span>
-          <span id="header-active-tasks" class="telemetry-value accent-cyan">0 RUNNING</span>
-        </div>
-
-        <div class="telemetry-item">
-          <span class="telemetry-label">Purged Containers:</span>
-          <span id="header-purged-count" class="telemetry-value">0 WIPED</span>
-        </div>
-
-        <div class="telemetry-item">
-          <span class="telemetry-label">System Uptime:</span>
-          <span id="header-uptime" class="telemetry-value mono">00:00:00</span>
-        </div>
-      </div>
     </header>
 
-    <!-- ====================================================================
-         VIEW MODE NAVIGATION: Simple Store Repricing vs Technical Cybersecurity
-         ==================================================================== -->
+    <!-- Main Navigation Bar -->
     <nav class="main-view-nav">
       <button id="view-tab-dropship" class="view-nav-btn active" type="button">
-        🛍️ Product Price Search & Comparison <span class="nav-badge-easy">Easy Mode</span>
+        🛍️ Product Price Search &amp; Comparison
       </button>
       <button id="view-tab-security" class="view-nav-btn" type="button">
-        🛡️ Cybersecurity & Sandbox Telemetry <span class="nav-badge-sec">Vultr Hackathon</span>
+        ⚙️ Developer Telemetry &amp; Infrastructure
       </button>
     </nav>
 
@@ -185,9 +144,9 @@
         <div class="card-body">
           
           <!-- Product Header Banner -->
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border-subtle); flex-wrap: wrap; gap: 10px;">
             <div>
-              <h2 id="comp-product-title" style="margin: 0 0 4px 0; font-size: 1.35rem; color: #ffffff; font-weight: 700;">Sony WH-1000XM5 Wireless Headphones</h2>
+              <h2 id="comp-product-title" style="margin: 0 0 4px 0; font-size: 1.35rem; color: var(--text-primary); font-weight: 700;">Sony WH-1000XM5 Wireless Headphones</h2>
               <p style="margin: 0; font-size: 0.80rem; color: var(--text-secondary);">
                 Verified across <span id="comp-store-count" class="accent-cyan" style="font-weight: 700;">4 competitor stores</span> via Vultr Serverless Inference AI
               </p>
@@ -244,7 +203,7 @@
                 <span id="comp-margin-badge" class="status-badge" style="background: rgba(0, 255, 136, 0.2); color: var(--accent-green); font-size: 0.65rem;">+20.3% MARGIN</span>
               </div>
               <div style="margin: 8px 0;">
-                <span id="comp-profit-unit" style="font-size: 1.9rem; font-weight: 900; color: #ffffff; font-family: monospace;">+$69.99</span>
+                <span id="comp-profit-unit" style="font-size: 1.9rem; font-weight: 900; color: var(--accent-green); font-family: monospace;">+$69.99</span>
                 <span style="font-size: 0.85rem; color: var(--text-secondary);">/unit</span>
               </div>
               <span style="font-size: 0.70rem; color: var(--text-secondary);">Net profit per customer order</span>
@@ -304,7 +263,7 @@
           </div>
 
           <!-- AI Repricing Strategy & Strategic Advice -->
-          <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 6px; padding: 14px 18px;">
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid var(--brand-primary); border-radius: 6px; padding: 14px 18px;">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--accent-cyan)">
                 <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/>
@@ -313,7 +272,7 @@
                 💡 Vultr AI Pricing Strategy for Dropshippers
               </span>
             </div>
-            <p id="comp-rationale-text" style="font-size: 0.85rem; color: #e2e8f0; margin: 0; line-height: 1.5;">
+            <p id="comp-rationale-text" style="font-size: 0.85rem; color: var(--text-primary); margin: 0; line-height: 1.5;">
               Amazon and Walmart are tied at $348.00. Set your dropshipping store price at $344.99 to capture immediate conversions as the lowest verified retailer while preserving a 20.3% net profit margin ($69.99 profit per order).
             </p>
           </div>
@@ -398,6 +357,60 @@
          VIEW CONTAINER 2: ADVANCED CYBERSECURITY & SANDBOX MATRIX (TECH/JUDGES)
          ==================================================================== -->
     <div id="view-container-security" style="display: none;">
+
+      <!-- DEVELOPER & INFRASTRUCTURE TELEMETRY (Preserves all backend elements & event listeners) -->
+      <section class="cyber-card" style="margin-bottom: 20px;">
+        <div class="card-header">
+          <div class="card-title-group">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+              <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+              <line x1="6" y1="6" x2="6.01" y2="6"></line>
+              <line x1="6" y1="18" x2="6.01" y2="18"></line>
+            </svg>
+            <span class="card-title">Backend Infrastructure &amp; Cloud Fleet</span>
+          </div>
+          <div class="card-actions" style="display: flex; gap: 8px;">
+            <button id="btn-vultr-modal" class="btn btn-secondary btn-sm" title="Configure Cloud Credentials &amp; Settings">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+              </svg>
+              <span id="vultr-badge-label">🔑 Cloud API: Connected</span>
+            </button>
+            <button id="btn-toggle-demo" class="btn btn-secondary btn-sm" title="Toggle autonomous test mode">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              <span id="demo-mode-label">Demo Simulation</span>
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="status-bar" style="border: none; padding: 4px 0; background: transparent;">
+            <div class="telemetry-item">
+              <span id="ws-indicator-dot" class="status-indicator-dot reconnecting"></span>
+              <span class="telemetry-label">Network Link:</span>
+              <span id="ws-status-text" class="telemetry-value accent-cyan">CONNECTING</span>
+            </div>
+            <div class="telemetry-item">
+              <span class="telemetry-label">Pool Availability:</span>
+              <span id="header-pool-status" class="telemetry-value accent-green">-- / -- READY</span>
+            </div>
+            <div class="telemetry-item">
+              <span class="telemetry-label">Active Missions:</span>
+              <span id="header-active-tasks" class="telemetry-value accent-cyan">0 RUNNING</span>
+            </div>
+            <div class="telemetry-item">
+              <span class="telemetry-label">Purged Containers:</span>
+              <span id="header-purged-count" class="telemetry-value">0 WIPED</span>
+            </div>
+            <div class="telemetry-item">
+              <span class="telemetry-label">System Uptime:</span>
+              <span id="header-uptime" class="telemetry-value mono">00:00:00</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <!-- HUMAN-IN-THE-LOOP APPROVAL REQUESTS (High Priority Alert Area) -->
       <section id="approval-section" class="cyber-card approvals-card">

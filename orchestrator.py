@@ -1226,64 +1226,54 @@ def _generate_competitor_svg(
     store_hash = abs(hash(store)) % 10000
 
     return f"""<svg width="640" height="400" viewBox="0 0 640 400" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="bg-{store_hash}" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0a0f1d"/>
-      <stop offset="100%" stop-color="#040711"/>
-    </linearGradient>
-    <linearGradient id="card-{store_hash}" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#151e32"/>
-      <stop offset="100%" stop-color="#0e1524"/>
-    </linearGradient>
-  </defs>
+  <!-- Clean Light Desktop Browser Frame -->
+  <rect width="640" height="400" fill="#f8fafc"/>
   
-  <!-- Background -->
-  <rect width="640" height="400" fill="url(#bg-{store_hash})"/>
+  <!-- Browser Chrome Top Bar -->
+  <rect x="0" y="0" width="640" height="42" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <circle cx="20" cy="21" r="5" fill="#f87171"/>
+  <circle cx="36" cy="21" r="5" fill="#fbbf24"/>
+  <circle cx="52" cy="21" r="5" fill="#4ade80"/>
   
-  <!-- Header Bar -->
-  <rect x="0" y="0" width="640" height="44" fill="#0f172a"/>
-  <circle cx="24" cy="22" r="6" fill="#ef4444"/>
-  <circle cx="42" cy="22" r="6" fill="#f59e0b"/>
-  <circle cx="60" cy="22" r="6" fill="#10b981"/>
+  <!-- Address Bar -->
+  <rect x="80" y="9" width="480" height="24" rx="12" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="96" y="25" font-family="sans-serif" font-size="11" fill="#475569">{safe_url}</text>
   
-  <rect x="100" y="10" width="440" height="24" rx="4" fill="#1e293b"/>
-  <text x="115" y="26" font-family="monospace" font-size="11" fill="#00f0ff">{safe_url}</text>
-  
-  <!-- Security Container Watermark -->
-  <rect x="20" y="60" width="600" height="320" rx="8" fill="url(#card-{store_hash})" stroke="#1e293b" stroke-width="1.5"/>
-  <rect x="36" y="74" width="160" height="22" rx="4" fill="rgba(0, 240, 255, 0.1)" stroke="#00f0ff" stroke-width="1"/>
-  <text x="44" y="89" font-family="monospace" font-size="10" font-weight="bold" fill="#00f0ff">gVisor Sandbox: ACTIVE</text>
+  <!-- Main Store Page Container -->
+  <rect x="16" y="56" width="608" height="328" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
   
   <!-- Retailer Logo Badge -->
-  <rect x="490" y="74" width="114" height="22" rx="4" fill="{badge_color}"/>
-  <text x="547" y="89" font-family="sans-serif" font-size="10" font-weight="bold" fill="{badge_text_color}" text-anchor="middle">{store_display}</text>
+  <rect x="36" y="74" width="120" height="26" rx="4" fill="{badge_color}"/>
+  <text x="96" y="91" font-family="sans-serif" font-size="11" font-weight="bold" fill="{badge_text_color}" text-anchor="middle">{store_display}</text>
   
-  <!-- Product Illustration Box -->
-  <rect x="36" y="112" width="220" height="248" rx="6" fill="#0b1120" stroke="#334155" stroke-dasharray="3 3"/>
-  <circle cx="146" cy="216" r="64" fill="none" stroke="#475569" stroke-width="6"/>
-  <circle cx="106" cy="236" r="24" fill="#1e293b" stroke="{accent_color}" stroke-width="2"/>
-  <circle cx="186" cy="236" r="24" fill="#1e293b" stroke="{accent_color}" stroke-width="2"/>
-  <text x="146" y="325" font-family="sans-serif" font-size="11" fill="#64748b" text-anchor="middle">DOM Viewport Capture</text>
-  <rect x="56" y="335" width="180" height="18" rx="3" fill="#0f172a"/>
-  <text x="146" y="347" font-family="monospace" font-size="9" fill="#00ff88" text-anchor="middle">Vultr Serverless Verified</text>
+  <!-- Verified Badge -->
+  <rect x="470" y="74" width="138" height="24" rx="12" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1"/>
+  <text x="539" y="90" font-family="sans-serif" font-size="10" font-weight="600" fill="#059669" text-anchor="middle">✓ Verified Listing</text>
   
-  <!-- Product Details -->
-  <text x="276" y="136" font-family="sans-serif" font-size="15" font-weight="bold" fill="#f8fafc">{safe_title}</text>
-  <text x="276" y="156" font-family="sans-serif" font-size="13" font-weight="bold" fill="#94a3b8">{safe_sub}</text>
+  <!-- Product Image Placeholder -->
+  <rect x="36" y="116" width="210" height="248" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <circle cx="141" cy="210" r="54" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+  <path d="M125 210a16 16 0 0 1 32 0v16h-32z" fill="#94a3b8"/>
+  <circle cx="141" cy="195" r="8" fill="#64748b"/>
+  <text x="141" y="295" font-family="sans-serif" font-size="11" font-weight="600" fill="#64748b" text-anchor="middle">Official Product View</text>
+  <text x="141" y="312" font-family="sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">{store_display} Storefront</text>
   
-  <text x="276" y="186" font-family="sans-serif" font-size="12" fill="{stock_color}">{stock_text}</text>
-  <text x="440" y="186" font-family="sans-serif" font-size="11" fill="#94a3b8">{safe_shipping}</text>
+  <!-- Product Details Right Column -->
+  <text x="266" y="140" font-family="sans-serif" font-size="16" font-weight="700" fill="#0f172a">{safe_title}</text>
+  <text x="266" y="162" font-family="sans-serif" font-size="13" fill="#64748b">{safe_sub}</text>
   
-  <!-- Price Display -->
-  <rect x="276" y="206" width="324" height="74" rx="6" fill="#0a0f1d" stroke="#1e293b"/>
-  <text x="292" y="246" font-family="sans-serif" font-size="32" font-weight="900" fill="#00f0ff">${price:.2f}</text>
+  <text x="266" y="194" font-family="sans-serif" font-size="12" font-weight="600" fill="{stock_color}">{stock_text}</text>
+  <text x="440" y="194" font-family="sans-serif" font-size="12" fill="#64748b">{safe_shipping}</text>
+  
+  <!-- Price Display Box -->
+  <rect x="266" y="214" width="342" height="76" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="286" y="256" font-family="sans-serif" font-size="34" font-weight="800" fill="#0f172a">${price:.2f}</text>
   {orig_str}
-  <text x="292" y="268" font-family="monospace" font-size="10" fill="#64748b">Confidence: 98% • Tier-2 Vultr Vision Audit</text>
+  <text x="286" y="278" font-family="sans-serif" font-size="11" fill="#64748b">Direct retailer price • Real-time competitive quote</text>
   
-  <!-- Verification Bar -->
-  <rect x="276" y="295" width="324" height="30" rx="4" fill="#0f172a" stroke="#10b981" stroke-width="1"/>
-  <circle cx="292" cy="310" r="5" fill="#10b981"/>
-  <text x="306" y="314" font-family="sans-serif" font-size="11" fill="#10b981" font-weight="bold">Verified Ground Truth Price via Vultr AI</text>
+  <!-- Action / Status Bar -->
+  <rect x="266" y="306" width="342" height="34" rx="6" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+  <text x="437" y="328" font-family="sans-serif" font-size="12" font-weight="600" fill="#15803d" text-anchor="middle">Price matched &amp; aligned for dropshipping</text>
 </svg>"""
 
 
