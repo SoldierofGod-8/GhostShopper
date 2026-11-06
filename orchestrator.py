@@ -1462,7 +1462,7 @@ async def get_vultr_config() -> VultrConfigResponse:
     """
     Retrieve current Vultr integration state, masked keys, and execution mode.
     """
-    env_account_key = os.environ.get("VULTR_API_KEY", "")
+    env_account_key = os.environ.get("VULTR_API_KEY", "") or settings.vultr_api_key
     has_account_key = bool(env_account_key and env_account_key != "your_vultr_api_key_here")
     has_inference_key = bool(settings.vultr_inference_api_key and settings.vultr_inference_api_key != "your_vultr_api_key_here")
 
@@ -1511,6 +1511,7 @@ async def update_vultr_config(payload: VultrConfigRequest) -> VultrConfigRespons
     if raw_api_key is not None:
         new_key = raw_api_key.strip()
         os.environ["VULTR_API_KEY"] = new_key
+        settings.vultr_api_key = new_key
         _upsert_env_line("VULTR_API_KEY", new_key)
         
         if new_key:
