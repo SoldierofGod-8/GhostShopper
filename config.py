@@ -92,7 +92,7 @@ class Settings(BaseSettings):
         description="Vultr inference chat completions API endpoint"
     )
     vultr_vision_model: str = Field(
-        default="llama-3.2-90b-vision-preview",
+        default="qwen3.8-flash-next",
         description="Vultr vision LLM model name for price verification"
     )
     blocked_subnets: str = Field(

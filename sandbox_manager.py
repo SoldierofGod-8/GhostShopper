@@ -68,23 +68,16 @@ class SandboxManager:
             # On Windows or when socket path differs, docker.from_env() handles named pipes
             if os.name == "nt" and "unix://" in self.config.docker_host:
                 logger.info("Windows detected: attempting default environment Docker connection.")
-                self.client = docker.from_env()
+                self.client = docker.from_env(timeout=1)
             else:
-                self.client = docker.DockerClient(base_url=self.config.docker_host)
+                self.client = docker.DockerClient(base_url=self.config.docker_host, timeout=1)
             
             # Ping daemon to test connection
             self.client.ping()
             logger.info("Successfully connected to Docker daemon at %s", self.config.docker_host)
         except Exception as exc:
-            logger.warning("Direct Docker connection to '%s' failed (%s). Attempting docker.from_env()...",
-                           self.config.docker_host, exc)
-            try:
-                self.client = docker.from_env()
-                self.client.ping()
-                logger.info("Successfully connected to Docker via docker.from_env().")
-            except Exception as env_exc:
-                logger.error("Failed to connect to Docker daemon: %s. Container calls will be restricted.", env_exc)
-                self.client = None
+            logger.info("Docker daemon not reachable locally (%s). Operating in simulation mode.", exc)
+            self.client = None
 
     def _ensure_network(self) -> None:
         """

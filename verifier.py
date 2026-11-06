@@ -323,14 +323,49 @@ class TwoTierVerifier:
             if not choices:
                 raise ValueError("No completion choices returned by Vultr Inference.")
 
-            content = choices[0].get("message", {}).get("content", "")
+            msg_obj = choices[0].get("message", {})
+            content = msg_obj.get("content", "") or ""
+            
+            # If content is empty or contains reasoning blocks (e.g. from reasoning-enabled models)
+            if not content.strip() and msg_obj.get("reasoning"):
+                content = msg_obj.get("reasoning", "")
+                
+            # Strip <think>...</think> or similar reasoning tags if present
+            cleaned_content = re.sub(r"<think>[\s\S]*?</think>", "", content, flags=re.IGNORECASE)
             
             # Clean possible markdown JSON wrappers (```json ... ```)
-            cleaned_content = re.sub(r"^```json\s*", "", content.strip(), flags=re.IGNORECASE)
+            cleaned_content = re.sub(r"^```json\s*", "", cleaned_content.strip(), flags=re.IGNORECASE)
             cleaned_content = re.sub(r"^```\s*", "", cleaned_content)
             cleaned_content = re.sub(r"\s*```$", "", cleaned_content)
 
-            parsed_data = json.loads(cleaned_content)
+            parsed_data = {}
+            # Attempt direct JSON parse
+            try:
+                parsed_data = json.loads(cleaned_content)
+            except Exception:
+                # Fallback: extract substring between first { and last }
+                json_match = re.search(r"\{[\s\S]*\}", cleaned_content)
+                if json_match:
+                    try:
+                        parsed_data = json.loads(json_match.group(0))
+                    except Exception:
+                        pass
+
+            # If still empty, use regex fallback to extract fields directly from text
+            if not parsed_data:
+                price_match = re.search(r'"verified_price"\s*:\s*([0-9\.]+)', cleaned_content)
+                curr_match = re.search(r'"currency"\s*:\s*"([A-Za-z]{3})"', cleaned_content)
+                conf_match = re.search(r'"confidence"\s*:\s*([0-9\.]+)', cleaned_content)
+                anomaly_match = re.search(r'"anomaly_detected"\s*:\s*(true|false)', cleaned_content, re.IGNORECASE)
+                expl_match = re.search(r'"(?:explanation|anomaly_reason)"\s*:\s*"([^"]+)"', cleaned_content)
+                
+                parsed_data = {
+                    "verified_price": float(price_match.group(1)) if price_match else None,
+                    "currency": curr_match.group(1) if curr_match else "USD",
+                    "confidence": float(conf_match.group(1)) if conf_match else 0.80,
+                    "anomaly_detected": (anomaly_match.group(1).lower() == "true") if anomaly_match else False,
+                    "anomaly_reason": expl_match.group(1) if expl_match else "Parsed from vision completion"
+                }
             
             verified_price = parsed_data.get("verified_price")
             if verified_price is not None:

@@ -126,6 +126,7 @@ export class GhostShopperApp {
     // Initial REST sync
     await this.fetchPoolStatus();
     await this.fetchVultrConfig();
+    await this.fetchInitialTasks();
 
     // Periodic telemetry sync (fallback every 8s)
     this.poolPollInterval = setInterval(() => {
@@ -774,6 +775,39 @@ export class GhostShopperApp {
   /**
    * Queries fleet pool telemetry: GET /api/pool/status
    */
+  /**
+   * Loads persisted competitor extraction records from /api/tasks on application startup.
+   */
+  async fetchInitialTasks() {
+    try {
+      const response = await fetch('/api/tasks');
+      if (!response.ok) return;
+      const tasks = await response.json();
+      if (Array.isArray(tasks) && tasks.length > 0) {
+        this.logStream.addLog({
+          level: 'INFO',
+          message: `Loaded ${tasks.length} verified competitor records from persistent workspace.`
+        });
+
+        // Sort oldest to newest so newest appear on top of table
+        tasks.sort((a, b) => new Date(a.started_at || 0) - new Date(b.started_at || 0));
+
+        for (const task of tasks) {
+          this._handleTaskUpdate(task);
+        }
+
+        this._recordBatch({
+          batchId: 'workspace-mission-01',
+          urlCount: tasks.length,
+          status: 'COMPLETED_VERIFIED',
+          timestamp: new Date()
+        });
+      }
+    } catch (err) {
+      console.warn('[GhostShopperApp] Could not fetch initial tasks:', err);
+    }
+  }
+
   async fetchPoolStatus() {
     try {
       const response = await fetch('/api/pool/status');
@@ -834,17 +868,57 @@ export class GhostShopperApp {
       }, 4000);
     }
 
+    // Determine screenshot URL
+    const screenshotUrl = task.screenshot_path
+      ? `/api/screenshot/${taskId}`
+      : (task.image || task.screenshot || `/api/screenshot/${taskId}`);
+
+    const status = task.state || task.status || 'COMPLETED';
+    const isWiped = status.includes('WIPED') || status.includes('PURGED');
+
+    // Update screenshot card in the live viewport
+    this.screenshotViewer.updateSnapshot(taskId, {
+      url: task.url,
+      containerId: task.container_id || `gvisor-${taskId.substring(Math.max(0, taskId.length - 6))}`,
+      image: screenshotUrl,
+      status: status,
+      step: isWiped ? 'Verified & Purged (Zero Residual)' : (task.step || task.message || 'Intelligence verified')
+    });
+
     // If task yielded product intelligence, add to results table
-    if (task.product_name || task.price !== undefined) {
+    const hasData = task.product_title || task.product_name || task.price_data || task.price !== undefined;
+    if (hasData) {
+      let priceVal = null;
+      let curr = '$';
+      let conf = 0.95;
+      let tier = 'TIER_1_LOCAL';
+      let anomaly = '';
+
+      if (task.price_data) {
+        priceVal = task.price_data.parsed_price !== undefined ? task.price_data.parsed_price : null;
+        curr = task.price_data.currency || 'USD';
+        conf = task.price_data.confidence !== undefined ? task.price_data.confidence : 0.95;
+        tier = task.price_data.verification_tier || 'TIER_1_LOCAL';
+        anomaly = task.price_data.anomaly_reason || '';
+      } else {
+        priceVal = task.price !== undefined ? task.price : null;
+        curr = task.currency || '$';
+        conf = task.confidence !== undefined ? task.confidence : 0.95;
+      }
+
+      const currSymbol = curr === 'USD' ? '$' : (curr === 'EUR' ? '€' : (curr === 'GBP' ? '£' : curr));
+
       this._upsertResultRecord({
         taskId,
         url: task.url,
-        productName: task.product_name || 'Standard Retail Product',
-        price: task.price !== undefined ? task.price : null,
-        currency: task.currency || '$',
-        confidence: task.confidence !== undefined ? task.confidence : 0.95,
-        status: task.status || 'COMPLETED',
-        extractedAt: task.extracted_at || new Date().toISOString()
+        productName: task.product_title || task.product_name || 'Standard Retail Product',
+        price: priceVal,
+        currency: currSymbol,
+        confidence: conf,
+        status: status,
+        verificationTier: tier,
+        anomalyReason: anomaly,
+        extractedAt: task.completed_at || task.started_at || task.extracted_at || new Date().toISOString()
       });
     }
 
@@ -1083,6 +1157,7 @@ export class GhostShopperApp {
             url: item.url,
             containerId: `task-${item.taskId.substring(0, 8)}`,
             step: `Extracted: ${item.productName} for ${priceDisplay}`,
+            image: `/api/screenshot/${item.taskId}`,
             timestamp: item.extractedAt
           });
         });

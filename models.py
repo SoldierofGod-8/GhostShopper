@@ -10,7 +10,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 import uuid
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl, field_validator
 
 
 def _utc_now() -> datetime:
@@ -54,6 +54,30 @@ class ScrapeRequest(BaseModel):
         description="Unique identifier for the scrape batch"
     )
 
+    @field_validator("urls")
+    @classmethod
+    def validate_urls(cls, v: List[str]) -> List[str]:
+        if not v:
+            raise ValueError("At least one target URL must be provided.")
+        if len(v) > 25:
+            raise ValueError("Batch limit exceeded: Maximum 25 URLs per scraping mission.")
+        
+        cleaned = []
+        for raw in v:
+            u = str(raw).strip()
+            if not u:
+                continue
+            if not (u.startswith("http://") or u.startswith("https://")):
+                if u.startswith("www.") or "." in u.split("/")[0]:
+                    u = f"https://{u}"
+                else:
+                    raise ValueError(f"Invalid URL protocol: '{raw}'. Only http:// and https:// targets are permitted.")
+            cleaned.append(u)
+            
+        if not cleaned:
+            raise ValueError("No valid URLs found in request payload.")
+        return cleaned
+
 
 class GoalRequest(BaseModel):
     """
@@ -79,6 +103,16 @@ class GoalRequest(BaseModel):
         default_factory=lambda: str(uuid.uuid4()),
         description="Generated batch correlation ID"
     )
+
+    @field_validator("goal")
+    @classmethod
+    def validate_goal(cls, v: str) -> str:
+        cleaned = v.strip()
+        if len(cleaned) < 3:
+            raise ValueError("Goal description must be at least 3 characters long.")
+        if len(cleaned) > 1000:
+            raise ValueError("Goal description cannot exceed 1000 characters.")
+        return cleaned
 
 
 class ContainmentDemoType(str, Enum):
@@ -118,7 +152,7 @@ class VultrConfigResponse(BaseModel):
     """
     vultr_api_key_configured: bool = False
     vultr_inference_key_configured: bool = False
-    vultr_vision_model: str = "llama-3.2-90b-vision-preview"
+    vultr_vision_model: str = "qwen3.8-flash-next"
     vultr_inference_endpoint: str = "https://api.vultrinference.com/v1/chat/completions"
     mode: str = "simulation"
     masked_account_key: str = ""
