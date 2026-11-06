@@ -242,28 +242,28 @@ export class GhostShopperApp {
       });
     }
 
-    // Pattern B Quick Goal Samples
+    // Pattern B Quick Goal Samples (Designed for Dropshippers & AI Stores)
     if (this.dom.btnSampleGoal1) {
       this.dom.btnSampleGoal1.addEventListener('click', () => {
         if (this.dom.goalInput) {
-          this.dom.goalInput.value = 'Compare Sony WH-1000XM5 wireless noise-canceling headphones across competitor retail sites, verify pricing with Vultr Vision LLM, and flag cart surcharges.';
-          this.toast.info('Goal Loaded', 'Loaded Sony XM5 competitor sweep goal.');
+          this.dom.goalInput.value = 'Compare Sony WH-1000XM5 wireless noise-canceling headphones across competitor retail sites, audit true checkout prices with Vultr Vision AI, and align dropshipping store margins against hidden fees.';
+          this.toast.info('Goal Loaded', 'Loaded Sony XM5 dropshipper price alignment goal.');
         }
       });
     }
     if (this.dom.btnSampleGoal2) {
       this.dom.btnSampleGoal2.addEventListener('click', () => {
         if (this.dom.goalInput) {
-          this.dom.goalInput.value = 'Audit Apple MacBook Air M3 15-inch 16GB RAM across major electronics retailers, verify authentic stock, and check checkout fee discrepancies.';
-          this.toast.info('Goal Loaded', 'Loaded MacBook Air pricing audit goal.');
+          this.dom.goalInput.value = 'Audit Apple MacBook Air M3 15-inch 16GB RAM across competitor electronics stores, verify authentic stock, and align dropship catalog pricing against deceptive promos.';
+          this.toast.info('Goal Loaded', 'Loaded MacBook Air dropshipping margin audit goal.');
         }
       });
     }
     if (this.dom.btnSampleGoal3) {
       this.dom.btnSampleGoal3.addEventListener('click', () => {
         if (this.dom.goalInput) {
-          this.dom.goalInput.value = 'Compare NVIDIA GeForce RTX 4080 Super GPU across Best Buy, Newegg, and B&H, check for bot protection traps, and extract verified cart totals.';
-          this.toast.info('Goal Loaded', 'Loaded RTX 4080 GPU competitor sweep goal.');
+          this.dom.goalInput.value = 'Compare NVIDIA GeForce RTX 4080 Super GPU across Best Buy, Newegg, and B&H, check for bot protection traps, and extract verified cart totals for dropship repricing.';
+          this.toast.info('Goal Loaded', 'Loaded RTX 4080 dropship repricing goal.');
         }
       });
     }

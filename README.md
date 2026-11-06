@@ -2,26 +2,28 @@
 
 <div align="center">
 
-**Autonomous E-Commerce Competitor Intelligence Platform**  
+**Autonomous Competitor Price Intelligence Fleet for Dropshippers & AI E-Commerce Stores**  
 *Built for the Vultr Hackathon · Pattern B: Sandboxed Browser Use (Comparison Shopper)*
 
 [![Vultr Infrastructure](https://img.shields.io/badge/Vultr-Cloud%20Compute%20%2B%20Serverless%20Inference-007bfc?style=for-the-badge&logo=vultr)](https://www.vultr.com/)
 [![Runtime](https://img.shields.io/badge/Hypervisor-gVisor%20(runsc)-00ff88?style=for-the-badge&logo=google)](https://gvisor.dev/)
-[![Vision AI](https://img.shields.io/badge/Vision%20Model-Llama%203.2%20Vision-ff3366?style=for-the-badge&logo=meta)](https://www.vultr.com/products/serverless-inference/)
+[![Vision AI](https://img.shields.io/badge/Vision%20Model-Vultr%20Serverless%20Vision-ff3366?style=for-the-badge&logo=meta)](https://www.vultr.com/products/serverless-inference/)
 [![Security Posture](https://img.shields.io/badge/Containment-Blast%20Radius%20Zero-00f0ff?style=for-the-badge)]()
+[![Target Audience](https://img.shields.io/badge/Target-Dropshippers%20%26%20AI%20Stores-00ff88?style=for-the-badge)]()
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI%20Async-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
 
 <p align="center">
-  <b>Deploy autonomous browser agents onto hostile retail websites with zero risk to your infrastructure.</b><br>
-  Every browser runs inside an impenetrable, disposable microVM that vanishes when the task is done.
+  <b>Empowering dropshippers and AI-powered dropshipping websites to safely monitor competitor prices, protect margins, and dynamically align store pricing with zero infrastructure risk.</b><br>
+  Every browser agent runs inside an impenetrable, disposable gVisor microVM on Vultr that vanishes the moment extraction is complete.
 </p>
 
 [Quick Start](#-quick-start-in-60-seconds) •
+[Why Dropshippers Need This](#-built-for-dropshippers--ai-powered-e-commerce-stores) •
 [What Is Ghost Shopper?](#-what-is-ghost-shopper-in-plain-english) •
 [The Containment Moment](#-the-containment-moment-demo-video-ready) •
 [Interactive Dashboard](#-the-interactive-dashboard) •
 [Vultr Architecture](#-vultr-architecture--data-flow) •
-[Nov 3rd Onboarding](#-november-3rd-onboarding-when-credits-arrive)
+[Onboarding Guide](#-onboarding--vultr-credentials)
 
 </div>
 
@@ -55,6 +57,28 @@ Ghost Shopper acts as a **centralized mission control layer** hosted on Vultr. I
 4. **When the scrape is finished**: The bubble is instantly destroyed (`docker rm -f`), permanently erasing all cookies, caches, and memory.
 
 > **Blast Radius Zero**: No matter how dangerous, broken, or hostile a webpage is, the damage is trapped inside a container that gets destroyed seconds later.
+
+---
+
+## 🎯 Built for Dropshippers & AI-Powered E-Commerce Stores
+
+Dropshipping is an ultra-competitive business of razor-thin margins (often 10%–20%). Whether you run an **automated AI-powered dropshipping storefront** or manage a **traditional dropshipping catalog**, your survival depends on **real-time competitive price alignment**:
+- If your store prices **$2 higher** than competitors on Amazon, Walmart, or rival Shopify stores, your ad spend is wasted and conversions drop to zero.
+- If your store prices **too low** because a competitor displayed a fake teaser price or hid a $30 mandatory handling fee at checkout, you sell at a direct financial loss.
+
+### The Dropshipper's Pricing Dilemma
+Traditional price monitoring tools fail dropshippers in three critical ways:
+1. **IP Bans Paralyze Store Operations**: Scraping competitor stores triggers Cloudflare, Akamai, or DataDome IP blocks. If your dropshipping store's server IP gets blacklisted, your store APIs, payment gateways, and supplier sync go down with it.
+2. **Deceptive Competitor Pricing Traps**: Hostile competitors intentionally inject fake `$0.00` or teaser prices in HTML microdata to poison automated scraping tools. Dropshippers undercutting phantom prices end up fulfilling orders at catastrophic negative margins.
+3. **Malicious Scripts & Cloud Compromise**: Hostile e-commerce platforms deploy JavaScript memory bombs, infinite redirect loops, and SSRF attacks to target the cloud instances of scraping rivals.
+
+### How Ghost Shopper Empowers Dropshippers
+Ghost Shopper provides the first **zero-risk, vision-verified price intelligence fleet** designed specifically for dropshippers:
+
+- 📊 **Dynamic Competitor Price Alignment**: Dispatches autonomous browser agents to sweep competitor product pages, extract real-time retail pricing, and export clean, structured datasets (JSON/CSV) directly compatible with automated repricing engines, Shopify, WooCommerce, or custom AI storefront pipelines.
+- 🛡️ **Blast Radius Zero (IP & Infrastructure Protection)**: Every crawl executes inside a sterile, disposable gVisor microVM on Vultr with dropped privileges and isolated network boundaries. Hostile retail scripts, memory leaks, or bot traps are quarantined and wiped upon task completion—leaving your dropshipping store backend 100% safe and unbannable.
+- 👁️ **Two-Tier Visual AI Verification**: Rather than trusting easily manipulated HTML/DOM code, Ghost Shopper feeds full-page screenshots to **Vultr Serverless Vision AI (`qwen3.8-flash-next`)**. The vision model visually reads the rendered price tag on the page, catching deceptive $0 DOM traps, crossed-out MSRPs, and hidden checkout surcharges before you reprice your catalog.
+- ⏸️ **Human-in-the-Loop (HITL) Margin Freeze**: When an anomaly or suspicious fee is detected, Ghost Shopper automatically pauses the sandbox (`docker pause`), freezing CPU cycles to 0.00% and alerting the store owner with a visual diff before any incorrect price syncs to your live store.
 
 ---
 

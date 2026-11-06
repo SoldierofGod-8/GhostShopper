@@ -2,16 +2,19 @@
 
 > **Project Name**: Ghost Shopper  
 > **Execution Pattern**: **Pattern B · Sandboxed Browser Use** (Comparison Shopper / Competitor Intelligence)  
+> **Target Audience**: Dropshippers & Owners of AI-Powered E-Commerce Stores (Dynamic Price Alignment)  
 > **Core Architecture**: Containment-First ("Blast Radius Zero")  
-> **Infrastructure**: Vultr Cloud Compute + Vultr Serverless Inference (Llama 3.2 Vision) + gVisor (`runsc`)  
+> **Infrastructure**: Vultr Cloud Compute + Vultr Serverless Inference (Vision AI) + gVisor (`runsc`)  
 
 ---
 
 ## 1. Executive Summary
 
-Modern web scraping and competitor intelligence agents face an adversarial web: malicious tracking scripts, infinite loops, memory leaks, prompt injection in HTML microdata, and dark patterns. Running headless browsers directly on application hosts exposes critical infrastructure to remote exploits, Server-Side Request Forgery (SSRF), and resource exhaustion.
+In e-commerce, **dropshippers and AI-powered dropshipping stores** operate on razor-thin 10%–20% margins where retail survival depends on competitive price alignment. If a store prices $2 higher than competitors, conversion drops to zero; if it prices too low based on deceptive competitor teaser prices or hidden cart surcharges, it fulfills orders at a direct loss.
 
-**Ghost Shopper** is a production-grade competitor intelligence platform built on Vultr infrastructure that treats all external web environments as actively hostile. Acting as a **centralized control layer**, Ghost Shopper translates high-level user goals into sandboxed browser workflows, dispatches them into isolated microVMs, verifies the output via multi-modal AI, and enforces strict human-in-the-loop controls before any final action is taken.
+However, modern competitor web scraping faces an actively hostile web: anti-bot IP blacklists that take down dropshipping store APIs, JavaScript memory bombs, SSRF attacks attempting to exfiltrate cloud infrastructure keys, and deceptive `$0.00` HTML microdata designed to mislead repricing bots.
+
+**Ghost Shopper** is a production-grade competitor price intelligence fleet built on Vultr infrastructure that treats all external retail environments as actively hostile. Acting as a **centralized control layer**, Ghost Shopper empowers dropshippers to input natural-language sourcing and alignment goals, dispatches browser agents into disposable gVisor microVMs, verifies ground-truth pricing with Vultr Serverless Vision AI, and enforces stateful human-in-the-loop controls before syncing data—delivering true **Blast Radius Zero** margin protection.
 
 ---
 
