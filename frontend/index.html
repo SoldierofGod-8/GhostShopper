@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ghost Shopper — Autonomous Competitor Intelligence System</title>
+
+  <!-- The stylesheet declares --font-sans: Inter and --font-mono: JetBrains Mono.
+       Without these links the browser silently falls back to system fonts, so the
+       type scale the design was authored for never renders. font-display: swap
+       keeps text visible while the webfont loads. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
   <link rel="stylesheet" href="css/dashboard.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔮</text></svg>">
 </head>
@@ -98,75 +107,67 @@
          VIEW CONTAINER 1: SIMPLE STORE REPRICING & COMPETITOR SEARCH (EASY MODE)
          ==================================================================== -->
     <div id="view-container-dropship">
-      
-      <!-- HERO SEARCH CONSOLE -->
-      <section class="search-hero-card">
-        <div class="search-hero-header">
-          <div>
-            <h2 class="search-hero-title">
-              🔍 Product Price Intelligence & Margin Search
-            </h2>
-            <p class="search-hero-subtitle">
-              Scan competitor prices across Amazon, Best Buy, Walmart, and Target in real time. Powered by Vultr Serverless Inference AI.
+      <div class="chat-shell">
+
+        <!-- ============================================================
+             TRANSCRIPT — the primary surface. Reads like an agent chat.
+             ============================================================ -->
+        <div id="chat-transcript" class="chat-transcript" aria-live="polite">
+
+          <div id="chat-welcome" class="chat-welcome">
+            <div class="chat-welcome-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="11" cy="11" r="7"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                <line x1="8" y1="11" x2="14" y2="11"></line>
+                <line x1="11" y1="8" x2="11" y2="14"></line>
+              </svg>
+            </div>
+            <h2 class="chat-welcome-title">What should I price-check?</h2>
+            <p class="chat-welcome-sub">
+              I search live competitor prices across the stores you pick, verify each one,
+              then recommend the price your store should list at &mdash; with the margin to match.
             </p>
-          </div>
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <span class="status-badge" style="background: rgba(0, 255, 136, 0.15); color: var(--accent-green); font-size: 0.72rem;">
-              ⚡ Vultr Inference Ready
-            </span>
-          </div>
-        </div>
 
-        <!-- Main Search Input Group -->
-        <div class="search-input-group">
-          <input 
-            type="text" 
-            id="hero-product-search" 
-            class="search-main-input" 
-            placeholder="Type any product (e.g. Sony WH-1000XM5, Apple AirPods Pro 2, Nintendo Switch OLED, Nike Dunks...)"
-            value="Sony WH-1000XM5"
-            spellcheck="false"
-          >
-          <button id="btn-hero-search" class="btn-search-hero" type="button">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <span id="btn-hero-search-label">Compare Prices Across Stores</span>
-          </button>
-        </div>
-
-        <!-- Quick Suggestions & Stores Selector Row -->
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-          <div class="quick-chips-row">
-            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Popular Searches:</span>
-            <button class="quick-chip-btn" data-query="Sony WH-1000XM5" type="button">🎧 Sony WH-1000XM5</button>
-            <button class="quick-chip-btn" data-query="Apple AirPods Pro 2" type="button">📱 AirPods Pro 2</button>
-            <button class="quick-chip-btn" data-query="Apple MacBook Air M3" type="button">💻 MacBook Air M3</button>
-            <button class="quick-chip-btn" data-query="Nintendo Switch OLED" type="button">🎮 Switch OLED</button>
-            <button class="quick-chip-btn" data-query="Nike Dunk Low" type="button">👟 Nike Dunk Low</button>
+            <div class="chat-starter-grid">
+              <button class="chat-starter" data-query="Sony WH-1000XM5" type="button">
+                <span class="chat-starter-emoji" aria-hidden="true">&#127911;</span>
+                <span class="chat-starter-body">
+                  <span class="chat-starter-title">Sony WH-1000XM5</span>
+                  <span class="chat-starter-desc">Compare headphone prices</span>
+                </span>
+              </button>
+              <button class="chat-starter" data-query="Apple AirPods Pro 2" type="button">
+                <span class="chat-starter-emoji" aria-hidden="true">&#128241;</span>
+                <span class="chat-starter-body">
+                  <span class="chat-starter-title">AirPods Pro 2</span>
+                  <span class="chat-starter-desc">Check the earbud market</span>
+                </span>
+              </button>
+              <button class="chat-starter" data-query="Apple MacBook Air M3" type="button">
+                <span class="chat-starter-emoji" aria-hidden="true">&#128187;</span>
+                <span class="chat-starter-body">
+                  <span class="chat-starter-title">MacBook Air M3</span>
+                  <span class="chat-starter-desc">High-ticket margin check</span>
+                </span>
+              </button>
+              <button class="chat-starter" data-query="Nintendo Switch OLED" type="button">
+                <span class="chat-starter-emoji" aria-hidden="true">&#127918;</span>
+                <span class="chat-starter-body">
+                  <span class="chat-starter-title">Switch OLED</span>
+                  <span class="chat-starter-desc">Gaming console spread</span>
+                </span>
+              </button>
+            </div>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 0.72rem; color: var(--text-secondary);">Stores:</span>
-            <label style="display: flex; align-items: center; gap: 4px; font-size: 0.75rem; cursor: pointer;">
-              <input type="checkbox" id="chk-hero-amazon" checked style="accent-color: var(--accent-cyan);"> Amazon
-            </label>
-            <label style="display: flex; align-items: center; gap: 4px; font-size: 0.75rem; cursor: pointer;">
-              <input type="checkbox" id="chk-hero-bestbuy" checked style="accent-color: var(--accent-cyan);"> Best Buy
-            </label>
-            <label style="display: flex; align-items: center; gap: 4px; font-size: 0.75rem; cursor: pointer;">
-              <input type="checkbox" id="chk-hero-walmart" checked style="accent-color: var(--accent-cyan);"> Walmart
-            </label>
-            <label style="display: flex; align-items: center; gap: 4px; font-size: 0.75rem; cursor: pointer;">
-              <input type="checkbox" id="chk-hero-target" checked style="accent-color: var(--accent-cyan);"> Target
-            </label>
-          </div>
-        </div>
-      </section>
+          <div id="chat-messages" class="chat-messages"></div>
 
-      <!-- LIVE COMPETITOR PRICE COMPARISON MATRIX -->
-      <section id="price-comparison-section" class="cyber-card" style="margin-bottom: 24px; border: 1px solid rgba(0, 240, 255, 0.4); box-shadow: 0 0 24px rgba(0, 240, 255, 0.08);">
+          <!-- Live comparison result. A singleton that app.js updates in place
+               by id; the chat layer re-anchors it to the end of the transcript
+               on every search so it reads as the latest reply. -->
+          <div id="chat-result-slot" class="chat-result-slot" hidden>
+      <section id="price-comparison-section" class="cyber-card chat-result-card">
         <div class="card-header" style="background: rgba(0, 240, 255, 0.04);">
           <div class="card-title-group">
             <svg viewBox="0 0 24 24" fill="var(--accent-cyan)">
@@ -277,6 +278,77 @@
         </div>
       </section>
 
+          </div>
+
+        </div>
+
+        <!-- ============================================================
+             COMPOSER — docked prompt bar.
+             ============================================================ -->
+        <div class="chat-composer-dock">
+
+          <div class="chat-chips" id="chat-chips">
+            <span class="chat-chips-label">Popular</span>
+            <button class="quick-chip-btn" data-query="Sony WH-1000XM5" type="button">Sony WH-1000XM5</button>
+            <button class="quick-chip-btn" data-query="Apple AirPods Pro 2" type="button">AirPods Pro 2</button>
+            <button class="quick-chip-btn" data-query="Apple MacBook Air M3" type="button">MacBook Air M3</button>
+            <button class="quick-chip-btn" data-query="Nintendo Switch OLED" type="button">Switch OLED</button>
+            <button class="quick-chip-btn" data-query="Nike Dunk Low" type="button">Nike Dunk Low</button>
+          </div>
+
+          <div class="chat-composer">
+            <label class="chat-composer-label" for="hero-product-search">
+              Search a product to compare prices
+            </label>
+
+            <div class="chat-composer-inputrow">
+              <svg class="chat-composer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input
+                type="text"
+                id="hero-product-search"
+                class="chat-input"
+                placeholder="e.g. Sony WH-1000XM5, AirPods Pro 2, Nintendo Switch OLED..."
+                value="Sony WH-1000XM5"
+                autocomplete="off"
+                spellcheck="false"
+              >
+              <button id="btn-hero-search" class="chat-send" type="button" title="Compare prices across stores">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                <span id="btn-hero-search-label">Compare</span>
+              </button>
+            </div>
+
+            <div class="chat-composer-foot">
+              <span class="chat-stores-label">Stores</span>
+              <label class="chat-store-pill">
+                <input type="checkbox" id="chk-hero-amazon" checked>
+                <span>Amazon</span>
+              </label>
+              <label class="chat-store-pill">
+                <input type="checkbox" id="chk-hero-bestbuy" checked>
+                <span>Best Buy</span>
+              </label>
+              <label class="chat-store-pill">
+                <input type="checkbox" id="chk-hero-walmart" checked>
+                <span>Walmart</span>
+              </label>
+              <label class="chat-store-pill">
+                <input type="checkbox" id="chk-hero-target" checked>
+                <span>Target</span>
+              </label>
+              <span class="chat-composer-hint">Press <kbd>Enter</kbd> to search</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
     </div>
 
     <!-- ====================================================================

@@ -7,6 +7,7 @@
 
 import { GhostWebSocket } from './websocket.js';
 import { SecurityMatrix, LogStream, ScreenshotViewer, TaskCard, ToastManager } from './components.js';
+import { ChatTranscript } from './chat.js';
 
 // Helper utility to safely escape HTML strings
 function escapeHtml(text) {
@@ -22,6 +23,10 @@ export class GhostShopperApp {
     this.toast = new ToastManager();
     this.securityMatrix = new SecurityMatrix();
     this.logStream = new LogStream(document.getElementById('log-viewport'));
+
+    // Chat-style "Easy Mode" conversation view. Created after logStream because
+    // it wraps logStream.addLog to mirror in-flight log lines into the transcript.
+    this.chat = new ChatTranscript(this);
     this.screenshotViewer = new ScreenshotViewer(
       document.getElementById('viewport-grid'),
       (snapshot) => this.openLightbox(snapshot)
@@ -746,6 +751,10 @@ export class GhostShopperApp {
     if (this.dom.chkHeroTarget && this.dom.chkHeroTarget.checked) stores.push('Target');
     if (stores.length === 0) stores.push('Amazon', 'Best Buy', 'Walmart', 'Target');
 
+    // Open the conversation turn before the first log line so the agent's
+    // working trail is captured into the transcript.
+    if (this.chat) this.chat.beginWork(query.trim(), stores);
+
     this.logStream.addLog({
       level: 'INFO',
       message: `[VULTR AI INTEL] Initiating product price search for '${query}' across ${stores.join(', ')}...`
@@ -771,11 +780,25 @@ export class GhostShopperApp {
       this.renderPriceComparison(data);
       this.toast.success('Prices Discovered', `Found verified pricing across ${data.competitor_quotes.length} stores.`);
 
+      if (this.chat) {
+        const n = data.competitor_quotes ? data.competitor_quotes.length : 0;
+        this.chat.endWork(
+          `Verified prices across ${n} store${n === 1 ? '' : 's'}. ` +
+          `Here is the comparison and the price I would list at.`
+        );
+      }
+
       // Refresh task lists & viewport
       await this.fetchInitialTasks();
     } catch (err) {
       console.error('[GhostShopperApp] Product search error:', err);
       this.toast.error('Search Notice', `${err.message || 'Connecting to fallback pricing...'}`);
+      if (this.chat) {
+        this.chat.fail(
+          `I could not complete that search — ${err.message || 'the pricing service did not respond'}. ` +
+          `Check the Vultr inference key and try again.`
+        );
+      }
     } finally {
       if (this.dom.btnHeroSearch) {
         this.dom.btnHeroSearch.disabled = false;

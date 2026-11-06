@@ -1406,8 +1406,11 @@ Return ONLY a valid JSON object in this exact structure:
     task_ids: List[str] = []
     created_scrape_results: List[ScrapeResult] = []
 
-    # Provision workspace directories and generate real SVG screenshots for each store
-    workspace_root = Path(settings.workspace_dir)
+    # Provision workspace directories and generate real SVG screenshots for each store.
+    # Use the resolved module-level WORKSPACE_DIR, not settings.workspace_dir: the
+    # setting defaults to the container path /app/workspace and _resolve_workspace_dir()
+    # already falls back to a host-writable directory at import time.
+    workspace_root = WORKSPACE_DIR
     workspace_root.mkdir(parents=True, exist_ok=True)
 
     for idx, item in enumerate(raw_quotes):
