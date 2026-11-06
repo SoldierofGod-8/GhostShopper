@@ -360,3 +360,69 @@ class WebSocketMessage(BaseModel):
         default_factory=datetime.utcnow,
         description="Message dispatch timestamp"
     )
+
+
+class CompetitorQuote(BaseModel):
+    """
+    Live competitor price quote extracted from a major retail marketplace.
+    """
+    store: str = Field(..., description="Store or marketplace name (e.g. Amazon, Best Buy, Walmart)")
+    price: float = Field(..., description="Current verified retail price")
+    original_price: Optional[float] = Field(default=None, description="Original list price or MSRP if on sale")
+    currency: str = Field(default="USD", description="Currency code (USD, EUR, etc.)")
+    url: str = Field(..., description="Product page or search URL")
+    shipping: str = Field(default="Free Shipping", description="Shipping conditions and speed")
+    condition: str = Field(default="New", description="Item condition (New, Refurbished, Open Box)")
+    in_stock: bool = Field(default=True, description="Stock availability status")
+    rating: Optional[float] = Field(default=4.7, description="Average customer rating out of 5.0")
+    screenshot_url: Optional[str] = Field(default=None, description="API endpoint for DOM screenshot proof")
+    task_id: Optional[str] = Field(default=None, description="Correlated gVisor inspection task ID")
+
+
+class ProductSearchRequest(BaseModel):
+    """
+    Product price intelligence search request for dropshippers.
+    """
+    query: str = Field(..., description="Product name or keyword to compare across competitor stores")
+    stores: List[str] = Field(
+        default=["Amazon", "Best Buy", "Walmart", "Target"],
+        description="List of target competitor marketplaces to search across"
+    )
+    target_margin: float = Field(
+        default=0.20,
+        ge=0.05,
+        le=0.80,
+        description="Target gross profit margin percentage (e.g. 0.20 for 20%)"
+    )
+    batch_id: Optional[str] = Field(default=None, description="Optional batch ID")
+
+    @field_validator("query")
+    @classmethod
+    def validate_query(cls, v: str) -> str:
+        cleaned = v.strip()
+        if len(cleaned) < 2:
+            raise ValueError("Product search query must be at least 2 characters.")
+        if len(cleaned) > 200:
+            raise ValueError("Product search query cannot exceed 200 characters.")
+        return cleaned
+
+
+class ProductSearchResponse(BaseModel):
+    """
+    Comprehensive competitor price comparison and dropshipper margin intelligence response.
+    """
+    product: str = Field(..., description="Official recognized product title")
+    currency: str = Field(default="USD", description="Currency code")
+    lowest_price: float = Field(..., description="Lowest competitor price found across stores")
+    highest_price: float = Field(..., description="Highest competitor price found across stores")
+    average_price: float = Field(..., description="Average market price across competitors")
+    recommended_dropship_price: float = Field(..., description="Optimal dropship retail price to win sales")
+    estimated_supplier_cost: float = Field(..., description="Estimated wholesale supplier cost")
+    estimated_profit_per_unit: float = Field(..., description="Gross profit dollars per unit sold")
+    estimated_margin_percent: float = Field(..., description="Gross profit margin percentage")
+    strategy_rationale: str = Field(..., description="AI competitive pricing and positioning strategy")
+    vultr_model_used: str = Field(..., description="Vultr AI inference model that performed the intelligence sweep")
+    competitor_quotes: List[CompetitorQuote] = Field(default_factory=list, description="Quotes across stores")
+    task_ids: List[str] = Field(default_factory=list, description="IDs of created gVisor inspection tasks")
+    batch_id: str = Field(..., description="Batch execution ID")
+
