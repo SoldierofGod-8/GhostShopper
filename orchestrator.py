@@ -142,6 +142,33 @@ BASE_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 WORKSPACE_DIR = Path(settings.workspace_dir)
 
+
+def _resolve_workspace_dir(configured: Path) -> Path:
+    """
+    Return a workspace directory that is guaranteed to be creatable.
+
+    ``settings.workspace_dir`` defaults to the container path ``/app/workspace``.
+    When the orchestrator runs directly on a host (local development, CI, or a
+    judge following the README quick start) that path is either unwritable or
+    outside the checkout, which previously raised ``PermissionError`` at import
+    time and stopped the app before it could boot. In that case fall back to a
+    ``workspace/`` directory next to this file.
+    """
+    try:
+        os.makedirs(str(configured), exist_ok=True)
+        return configured
+    except OSError as exc:  # PermissionError, ReadOnlyFilesystemError, etc.
+        fallback = BASE_DIR / "workspace"
+        os.makedirs(str(fallback), exist_ok=True)
+        print(
+            f"[config] workspace_dir '{configured}' is not usable ({exc}); "
+            f"falling back to '{fallback}'"
+        )
+        return fallback
+
+
+WORKSPACE_DIR = _resolve_workspace_dir(WORKSPACE_DIR)
+
 # Ensure workspace host directory exists
 os.makedirs(str(WORKSPACE_DIR), exist_ok=True)
 
