@@ -186,6 +186,102 @@ settings.workspace_dir = str(WORKSPACE_DIR)
 # Ensure workspace host directory exists
 os.makedirs(str(WORKSPACE_DIR), exist_ok=True)
 
+
+# Permission bits for task directories. 0o777 is deliberate.
+#
+# Task directories are shared by three identities that cannot be reconciled:
+#   - this orchestrator, which runs as UID 1000 in its container
+#   - the sandbox container, which runs as `ghostworker` with an unconstrained UID
+#   - whoever owns the bind-mounted directory on the host (root, when the image
+#     created it; a remote user, when dockerd pulled from a repository)
+#
+# Nothing in the repo pins a numeric UID for the sandbox worker, so there is no
+# single owner everybody agrees on. Directories are therefore left world-writable
+# rather than owned, and the sandbox runs read-only on the network with
+# --cap-drop=ALL. A 0o000-0o777 permission bit is not the security boundary
+# here; the container boundary is.
+TASK_DIR_MODE = 0o777
+
+# The shared root gets the sticky bit on top of world-writable, like /tmp. Every
+# sandbox writes into the same mount, so without it one worker could unlink
+# another task's artifacts. Sticky means only a directory's owner (or root) may
+# remove or rename it, so the deletion blast radius stops at the task that
+# created the file.
+WORKSPACE_ROOT_MODE = 0o1777
+
+
+def _ensure_task_dir(path: Path, mode: int = TASK_DIR_MODE) -> Path:
+    """Create ``path`` so that both the orchestrator and the sandbox can write to it.
+
+    A plain ``mkdir`` is not sufficient. ``/app/workspace`` is a host bind mount,
+    so the directory it creates is owned by whichever UID the orchestrator runs
+    as (1000 in the container image). The sandbox later writes into it as
+    ``ghostworker`` with a different UID and fails with:
+
+        PermissionError: [Errno 13] Permission denied: '/app/workspace/task-...'
+
+    which surfaced to the user as a failed search. This function widens only the
+    directory it creates, and only the group/other rwx bits.
+
+    Args:
+        path: Directory to create, along with any missing parents.
+
+    Returns:
+        The same path, for convenient chaining.
+    """
+    path.mkdir(parents=True, exist_ok=True)
+    try:
+        os.chmod(path, mode)
+    except OSError as exc:
+        # Not fatal: log and carry on. If the write does fail later the sandbox
+        # error is more specific, and swallowing this would repeat the mistake
+        # that hid the original failure behind a generic message.
+        logger.warning(
+            "Could not widen permissions on task directory %s (%s); "
+            "the sandbox may be unable to write its screenshot.",
+            path, exc
+        )
+    return path
+
+
+def _prepare_workspace_root() -> Path:
+    """Return a workspace root this process can actually create task dirs in.
+
+    ``_resolve_workspace_dir`` only tests that the root itself is creatable. A
+    bind mount can pass that test and still refuse new entries underneath it:
+    the directory exists on the host, owned by root with restrictive modes, and
+    the orchestrator gets ``mkdir /app/workspace/task-... -> EACCES`` while
+    ``/app/workspace`` itself looks fine. Probe with a real directory so the
+    failure is detected once, at startup, instead of on every search.
+    """
+    probe = WORKSPACE_DIR / ".write-probe"
+    try:
+        probe.mkdir(parents=True, exist_ok=True)
+        probe.rmdir()
+        try:
+            os.chmod(WORKSPACE_DIR, WORKSPACE_ROOT_MODE)
+        except OSError as exc:
+            logger.warning(
+                "Could not widen permissions on workspace root %s (%s); "
+                "sandboxes may be unable to create task directories.",
+                WORKSPACE_DIR, exc
+            )
+        return WORKSPACE_DIR
+    except OSError as exc:
+        fallback = BASE_DIR / "workspace"
+        os.makedirs(str(fallback), exist_ok=True)
+        logger.warning(
+            "workspace_dir %s is not writable (%s); falling back to %s. "
+            "Task artifacts written here will not be visible to a sandbox that "
+            "bind-mounts the original path.",
+            WORKSPACE_DIR, exc, fallback
+        )
+        return fallback
+
+
+WORKSPACE_DIR = _prepare_workspace_root()
+settings.workspace_dir = str(WORKSPACE_DIR)
+
 # -----------------------------------------------------------------------------
 # FastAPI Application Initialization
 # -----------------------------------------------------------------------------
@@ -2141,7 +2237,7 @@ Return ONLY a valid JSON object in this exact structure:
     # setting defaults to the container path /app/workspace and _resolve_workspace_dir()
     # already falls back to a host-writable directory at import time.
     workspace_root = WORKSPACE_DIR
-    workspace_root.mkdir(parents=True, exist_ok=True)
+    _ensure_task_dir(workspace_root, mode=WORKSPACE_ROOT_MODE)
 
         # Step 1: Pre-generate task configurations and genuine retailer URLs
     task_specs = []
@@ -2162,7 +2258,7 @@ Return ONLY a valid JSON object in this exact structure:
         task_ids.append(tid)
 
         task_dir = workspace_root / tid
-        task_dir.mkdir(parents=True, exist_ok=True)
+        _ensure_task_dir(task_dir)
         task_specs.append({
             "tid": tid,
             "store_name": store_name,
