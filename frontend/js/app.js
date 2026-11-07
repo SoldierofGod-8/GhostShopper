@@ -996,7 +996,8 @@ export class GhostShopperApp {
         const thumbHtml = shotUrl
           ? `<button class="store-card-shot ${provenanceClass}" type="button"
                      title="${escapeHtml(provenanceTitle)}" aria-label="View ${escapeHtml(quote.store)} screenshot">
-               <img src="${escapeHtml(shotUrl)}" alt="Screenshot of the ${escapeHtml(quote.store)} listing for ${escapeHtml(quote.product_title || quote.store)}" loading="lazy">
+               <img src="${escapeHtml(shotUrl)}" alt="Screenshot of the ${escapeHtml(quote.store)} listing for ${escapeHtml(quote.product_title || quote.store)}" loading="lazy"
+                    onerror="this.parentElement.remove()">
                <span class="store-card-shot-tag">${provenanceLabel}</span>
              </button>`
           : '';
@@ -1092,7 +1093,7 @@ export class GhostShopperApp {
           in_stock: true,
           screenshot_url: "/api/screenshot/task-sony-amazon-01",
           task_id: "task-sony-amazon-01",
-          screenshot_kind: "live"
+          screenshot_kind: "synthetic"
         },
         {
           store: "Best Buy",
@@ -1104,7 +1105,7 @@ export class GhostShopperApp {
           in_stock: true,
           screenshot_url: "/api/screenshot/task-sony-bestbuy-02",
           task_id: "task-sony-bestbuy-02",
-          screenshot_kind: "live"
+          screenshot_kind: "synthetic"
         },
         {
           store: "Walmart",
@@ -1116,7 +1117,7 @@ export class GhostShopperApp {
           in_stock: true,
           screenshot_url: "/api/screenshot/task-sony-walmart-03",
           task_id: "task-sony-walmart-03",
-          screenshot_kind: "live"
+          screenshot_kind: "synthetic"
         },
         {
           store: "Target",
@@ -1128,7 +1129,7 @@ export class GhostShopperApp {
           in_stock: true,
           screenshot_url: "/api/screenshot/task-sony-bhphoto-05",
           task_id: "task-sony-bhphoto-05",
-          screenshot_kind: "live"
+          screenshot_kind: "synthetic"
         },
         {
           store: "Jumia",
@@ -1140,7 +1141,7 @@ export class GhostShopperApp {
           in_stock: true,
           screenshot_url: "/api/screenshot/task-sony-jumia-06",
           task_id: "task-sony-jumia-06",
-          screenshot_kind: "live"
+          screenshot_kind: "synthetic"
         },
         {
           store: "Konga",
@@ -1152,7 +1153,7 @@ export class GhostShopperApp {
           in_stock: true,
           screenshot_url: "/api/screenshot/task-sony-konga-07",
           task_id: "task-sony-konga-07",
-          screenshot_kind: "live"
+          screenshot_kind: "synthetic"
         },
         {
           store: "Jiji.ng",
@@ -1164,7 +1165,7 @@ export class GhostShopperApp {
           in_stock: true,
           screenshot_url: "/api/screenshot/task-sony-jiji-08",
           task_id: "task-sony-jiji-08",
-          screenshot_kind: "live"
+          screenshot_kind: "synthetic"
         }
       ]
     };

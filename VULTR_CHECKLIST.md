@@ -84,16 +84,19 @@ The script also needs `jq` and `curl` installed locally.
 
 ## E. Non-Vultr blockers I found while checking
 
-### 🔴 E1 — License conflict. This could invalidate the submission.
+### ✅ E1 — License conflict. RESOLVED.
 The hackathon states: *"Submissions must be original and **MIT-compliant**."*
 
-Your repo has **no LICENSE file at all**, and `README.md:331` says:
+The repo previously had **no LICENSE file**, and `README.md` said:
 
 > `Proprietary — Built for the Vultr Cloud Hackathon. All rights reserved.`
 
-**Action:** decide now. Adding an `MIT` LICENSE and changing that line is a 2-minute fix.
-Leaving "All rights reserved" in a submission that requires MIT compliance is an avoidable
-own goal.
+**Fixed:** an MIT `LICENSE` file was added at the repo root and that README line now
+reads `MIT — see [LICENSE](LICENSE)`.
+
+If you would rather keep this proprietary, delete `LICENSE` and revert that line — but
+note the rules explicitly require MIT compliance, so shipping proprietary risks the
+entry being rejected on a technicality.
 
 ### 🟡 E2 — Two deliverables nobody had on the list
 The "What to submit" section requires more than the six-item checklist:
@@ -138,7 +141,7 @@ Do **not** let the credential hunt block progress. These need no Vultr access:
 2. ✅ `VULTR_API_KEY`
 3. ✅ `VULTR_INFERENCE_API_KEY`
 4. ✅ Output of the `curl .../v1/models` command above
-5. ✅ Your call on **MIT vs. proprietary**
+5. ✅ ~~Your call on **MIT vs. proprietary**~~ — resolved: MIT `LICENSE` added
 
 ---
 
