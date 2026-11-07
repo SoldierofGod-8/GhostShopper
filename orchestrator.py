@@ -1731,9 +1731,27 @@ async def _capture_live_screenshot(
                 sandbox_manager.client.api.exec_start(instance["Id"], detach=True)
                 return instance["Id"]
 
-            await asyncio.to_thread(_exec_scraper)
+            exec_id = await asyncio.to_thread(_exec_scraper)
 
             deadline = asyncio.get_event_loop().time() + settings.live_capture_timeout_seconds
+
+            def _worker_exited() -> bool:
+                """True once the scraper process has exited.
+
+                Polling only for the artifact means a worker that dies early
+                (bot challenge, 404, crash) makes us burn the entire
+                live_capture_timeout_seconds before giving up. Checking the exec
+                state lets us bail as soon as there is nothing left to wait for.
+                """
+                try:
+                    assert sandbox_manager is not None and sandbox_manager.client is not None
+                    state = sandbox_manager.client.api.exec_inspect(exec_id)
+                    return not state.get("Running", True)
+                except Exception:
+                    # If we cannot read the state, fall back to the old behaviour
+                    # of waiting out the deadline rather than giving up early.
+                    return False
+
             while asyncio.get_event_loop().time() < deadline:
                 if screenshot_png.is_file() and screenshot_png.stat().st_size > 0:
                     await asyncio.sleep(0.3)
@@ -1744,6 +1762,19 @@ async def _capture_live_screenshot(
                             task_id=task_id
                         )
                         return screenshot_png
+
+                if await asyncio.to_thread(_worker_exited):
+                    # One last grace read in case the file landed as it exited.
+                    await asyncio.sleep(0.5)
+                    if screenshot_png.is_file() and screenshot_png.stat().st_size > 0:
+                        return screenshot_png
+                    logger.warning(
+                        "Sandbox scraper exited without producing a screenshot for %s; "
+                        "abandoning capture early instead of waiting out the full %ss timeout.",
+                        target_url, settings.live_capture_timeout_seconds
+                    )
+                    break
+
                 await asyncio.sleep(0.5)
         except Exception as exc:
             logger.warning("Docker sandbox capture failed for %s: %s", target_url, exc)
