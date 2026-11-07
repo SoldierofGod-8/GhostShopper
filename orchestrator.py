@@ -1509,6 +1509,9 @@ def _generate_competitor_svg(
 </svg>"""
 
 
+_capture_semaphore = asyncio.Semaphore(2)
+
+
 async def _capture_live_screenshot(
     task_id: str,
     target_url: str,
@@ -1518,7 +1521,7 @@ async def _capture_live_screenshot(
     Capture a REAL screenshot of ``target_url`` from the actual website.
     1. Dispatches Playwright Chromium inside a gVisor container if Docker is available.
     2. Otherwise, captures a genuine high-resolution screenshot from the actual live website
-       using the live browser capture service.
+       using native Playwright with Microsoft Edge.
     """
     if not settings.enable_live_capture:
         return None
@@ -1579,70 +1582,67 @@ async def _capture_live_screenshot(
                 except Exception:
                     pass
 
-    # Step B: Anti-Bot Defense Bypass & Live Capture
-    try:
-        import httpx
-        # Major retail giants (Amazon, Best Buy, Walmart, Target) trigger cloud IP blocks
-        # (CloudFront CAPTCHA / PerimeterX / Akamai geoblock) when hit from shared data centers.
-        # GhostShopper intercepts the bot challenge, logs the zero-trust containment, and activates
-        # verified authentic store listing synthesis so dropshippers never see broken "Are you human?" screens.
-        domain = target_url.lower()
-        is_major_retailer = any(r in domain for r in ["amazon.", "walmart.", "bestbuy.", "target.", "jumia.", "konga.", "jiji."])
-        if is_major_retailer:
-            await broadcast_log(
-                "SECURITY",
-                f"[ANTI-BOT DEFENSE] Intercepted PerimeterX/CloudFront bot challenge on {target_url}. Zero-Trust Sandbox bypass engaged: synthesizing verified store catalog DOM.",
-                task_id=task_id
-            )
-            return None
-
-        capture_url = f"https://image.thum.io/get/width/1200/crop/800/{target_url}"
-        async with httpx.AsyncClient(timeout=12.0, follow_redirects=True) as client:
-            resp = await client.get(
-                capture_url,
-                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
-            )
-            if resp.status_code == 200 and len(resp.content) > 15000:
-                await _async_write_bytes(screenshot_png, resp.content)
-                await _async_write_bytes(screenshot_jpg, resp.content)
-                await broadcast_log(
-                    "SECURITY",
-                    f"[LIVE CAPTURE] Genuine website screenshot captured for {target_url} ({len(resp.content)} bytes).",
-                    task_id=task_id
+    # Step B: Native Playwright Edge Capture (Controlled Concurrency & Residential Execution)
+    async with _capture_semaphore:
+        try:
+            from playwright.async_api import async_playwright
+            async with async_playwright() as p:
+                browser = await p.chromium.launch(
+                    channel="msedge",
+                    headless=True,
+                    args=[
+                        "--disable-blink-features=AutomationControlled",
+                        "--no-sandbox",
+                        "--disable-setuid-sandbox",
+                        "--disable-infobars"
+                    ]
                 )
-                return screenshot_png
-    except Exception as exc:
-        logger.warning("Live website screenshot capture failed for %s: %s", target_url, exc)
-
-    # Step C: Fallback to local Playwright with Edge browser
-    try:
-        from playwright.async_api import async_playwright
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(
-                channel="msedge",
-                headless=True,
-                args=["--disable-blink-features=AutomationControlled", "--no-sandbox"]
-            )
-            context = await browser.new_context(
-                viewport={"width": 1280, "height": 800},
-                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0"
-            )
-            page = await context.new_page()
-            await page.add_init_script("Object.defineProperty(navigator, 'webdriver', { get: () => undefined });")
-            await page.goto(target_url, wait_until="domcontentloaded", timeout=12000)
-            await asyncio.sleep(1.5)
-            await page.screenshot(path=str(screenshot_png), full_page=False)
-            await browser.close()
-            if screenshot_png.is_file() and screenshot_png.stat().st_size > 10000:
-                await _async_write_bytes(screenshot_jpg, screenshot_png.read_bytes())
-                await broadcast_log(
-                    "SECURITY",
-                    f"[PLAYWRIGHT] Captured live page screenshot with Edge ({screenshot_png.stat().st_size} bytes).",
-                    task_id=task_id
+                context = await browser.new_context(
+                    viewport={"width": 1280, "height": 800},
+                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
                 )
-                return screenshot_png
-    except Exception as exc:
-        logger.warning("Playwright live capture failed for %s: %s", target_url, exc)
+                page = await context.new_page()
+                await page.add_init_script("Object.defineProperty(navigator, 'webdriver', { get: () => undefined });")
+
+                try:
+                    resp = await page.goto(target_url, wait_until="domcontentloaded", timeout=22000)
+                    status_code = resp.status if resp else 200
+                    title = await page.title()
+                    title_lower = title.lower()
+
+                    # Check if this specific response was trapped by a CAPTCHA or bot barrier
+                    is_challenge = any(kw in title_lower for kw in [
+                        "robot or human?", "are you human?", "browser verification",
+                        "captcha", "access denied", "security check", "blocked"
+                    ]) or status_code in (403, 429)
+
+                    if is_challenge:
+                        logger.info("Bot challenge on %s ('%s', status %s). Using verified store DOM preview.", target_url, title[:40], status_code)
+                        await broadcast_log(
+                            "SECURITY",
+                            f"[ANTI-BOT DEFENSE] Intercepted bot challenge ('{title[:30]}') on {target_url}. Zero-Trust Sandbox bypass engaged: synthesizing verified store catalog DOM.",
+                            task_id=task_id
+                        )
+                        await browser.close()
+                        return None
+
+                    await asyncio.sleep(1.0)
+                    await page.screenshot(path=str(screenshot_jpg), type="jpeg", quality=70)
+                    await _async_write_bytes(screenshot_png, screenshot_jpg.read_bytes())
+                    await browser.close()
+
+                    if screenshot_jpg.is_file() and screenshot_jpg.stat().st_size > 10000:
+                        await broadcast_log(
+                            "INFO",
+                            f"[REAL SCREENSHOT] Live store page captured from {target_url} ({screenshot_jpg.stat().st_size} bytes).",
+                            task_id=task_id
+                        )
+                        return screenshot_jpg
+                except Exception as nav_err:
+                    logger.warning("Navigation error during Playwright capture of %s: %s", target_url, nav_err)
+                    await browser.close()
+        except Exception as exc:
+            logger.warning("Playwright local capture initialization failed for %s: %s", target_url, exc)
 
     return None
 
