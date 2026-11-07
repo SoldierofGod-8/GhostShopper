@@ -1400,24 +1400,31 @@ export class GhostShopperApp {
     // Track state
     this.tasks.set(taskId, { ...(this.tasks.get(taskId) || {}), ...task });
 
-    // Only update screenshot card in viewport if NOT an initial historical load of 50+ records
-    if (!isHistorical) {
+    // Resolve the task state ONCE, at function scope. /api/tasks returns
+    // ScrapeResult.model_dump(), whose field is `state`; only the WebSocket
+    // task_update payload gets a `status` alias added server-side by
+    // broadcast_state_change. Both the viewport block below and the
+    // results-table record further down need it, so it must not be trapped
+    // inside the viewport block - that previously made `status` undefined at
+    // the _upsertResultRecord call and threw for any task carrying price data.
+    const status = task.state || task.status || 'COMPLETED';
+    const isWiped = status.includes('WIPED') || status.includes('PURGED');
+
+    {
       const screenshotUrl = task.screenshot_path
         ? `/api/screenshot/${taskId}`
         : (task.image || task.screenshot || `/api/screenshot/${taskId}`);
 
-      const status = task.state || task.status || 'COMPLETED';
-      const isWiped = status.includes('WIPED') || status.includes('PURGED');
-
-      if (task.status === 'EXECUTING' || task.status === 'VERIFYING' || task.status === 'PROVISIONING') {
+      // Branch on the resolved `status`, never on `task.status` directly.
+      if (status === 'EXECUTING' || status === 'VERIFYING' || status === 'PROVISIONING') {
         this.screenshotViewer.updateSnapshot(taskId, {
           url: task.url,
           containerId: task.container_id || `gvisor-${taskId.substring(Math.max(0, taskId.length - 6))}`,
           image: screenshotUrl,
-          status: task.status,
+          status: status,
           step: task.step || task.message || 'Processing target'
         });
-      } else if (task.status === 'COMPLETED' || task.status === 'WIPED') {
+      } else if (status === 'COMPLETED' || isWiped) {
         this.screenshotViewer.updateSnapshot(taskId, {
           url: task.url,
           containerId: task.container_id || `gvisor-${taskId.substring(Math.max(0, taskId.length - 6))}`,
@@ -1425,9 +1432,10 @@ export class GhostShopperApp {
           status: status,
           step: isWiped ? 'Verified & Purged (Zero Residual)' : (task.step || task.message || 'Intelligence verified')
         });
-        setTimeout(() => {
-          this.screenshotViewer.removeSnapshot(taskId);
-        }, 5000);
+        // Deliberately no auto-removal. This panel is the evidence view for the
+        // captures a search just produced; deleting each one after 5s made the
+        // search look like it had done nothing. ScreenshotViewer already caps
+        // itself at 6 snapshots, so this cannot grow without bound.
       }
     }
 
