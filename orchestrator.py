@@ -41,8 +41,28 @@ async def _async_read_text(file_path: Union[str, Path]) -> str:
             return f.read()
     return await asyncio.to_thread(_read)
 
+def _ensure_parent_dir(file_path: Union[str, Path]) -> None:
+    """Create the directory a file is about to be written into.
+
+    A task directory can disappear between being created at the top of a search
+    and being written into at the bottom of it: the workspace is a bind mount
+    that persists across container recreations, and a task directory removed on
+    the host reappears to this process as absent. Writing then fails with:
+
+        FileNotFoundError: [Errno 2] No such file or directory:
+            '/app/workspace/task-search-amazon-a16a0f'
+
+    which surfaced to the user as a failed search even though nothing was wrong
+    with the search itself. Re-creating the directory is cheaper and more honest
+    than refusing to write, and a genuine failure (unwritable mount) still
+    raises from mkdir instead of from open.
+    """
+    Path(file_path).parent.mkdir(parents=True, exist_ok=True)
+
+
 async def _async_write_text(file_path: Union[str, Path], content: str) -> None:
     """Write text content to file asynchronously with or without aiofiles."""
+    _ensure_parent_dir(file_path)
     if aiofiles is not None:
         async with aiofiles.open(str(file_path), mode="w", encoding="utf-8") as f:
             await f.write(content)
@@ -54,6 +74,7 @@ async def _async_write_text(file_path: Union[str, Path], content: str) -> None:
 
 async def _async_write_bytes(file_path: Union[str, Path], content: bytes) -> None:
     """Write binary content to file asynchronously with or without aiofiles."""
+    _ensure_parent_dir(file_path)
     if aiofiles is not None:
         async with aiofiles.open(str(file_path), mode="wb") as f:
             await f.write(content)
@@ -2347,6 +2368,11 @@ Return ONLY a valid JSON object in this exact structure:
             "screenshot": artifact_path.name,
             "vultr_verified": True
         }
+        # Re-assert the task directory before writing into it. It was created at
+        # the top of this function, but the capture step can take tens of seconds
+        # and the workspace is a bind mount shared with the sandbox and the host.
+        # Recreating is idempotent and restores the permissions the sandbox needs.
+        _ensure_task_dir(task_dir)
         await _async_write_text(task_dir / "output.json", json.dumps(output_payload, indent=2))
 
         # Register ScrapeResult

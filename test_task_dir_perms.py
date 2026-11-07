@@ -20,6 +20,15 @@ from pathlib import Path
 
 sys.path.insert(0, "/home/user/GhostShopper")
 
+# Importing orchestrator creates its workspace at import time. Run under sudo
+# that would be /app/workspace as root, which then breaks other tests (the
+# resolver happily uses it, and nothing else can write there). Pin it to a
+# scratch directory so this test is self-contained regardless of who runs it.
+os.environ.setdefault(
+    "WORKSPACE_DIR",
+    os.path.join("/tmp", "ghost-shopper-test-" + os.path.basename(__file__).replace(".py", "")),
+)
+
 import orchestrator as o
 
 failures = 0
