@@ -6,8 +6,6 @@
 # Docker SDK (using gVisor runsc runtime when configured).
 # ==============================================================================
 
-version: '3.8'
-
 services:
   orchestrator:
     build:
