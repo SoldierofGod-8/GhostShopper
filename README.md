@@ -1,4 +1,4 @@
-# 🔮 Ghost Shopper
+# <img src="frontend/assets/ghost-icon.png" width="32" height="32" style="vertical-align: middle;" alt="GhostShopper"> GhostShopper
 
 <div align="center">
 
@@ -122,7 +122,7 @@ The frontend is a single-page cybersecurity dashboard built with zero external C
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
-│ 🔮 GHOST SHOPPER  v2.5.0-SEC   [Link: ONLINE]  [Pool: 3/3 READY]  [Purged: 14 WIPED]   │
+│ 👻 GHOST SHOPPER  v2.5.0-SEC   [Link: ONLINE]  [Pool: 3/3 READY]  [Purged: 14 WIPED]   │
 ├────────────────────────────────────────────────────────────────────────────────────────┤
 │ ┌───────────────────────────────┐ ┌──────────────────────────────────────────────────┐ │
 │ │ 🎯 MISSION CONTROL & PLANNER  │ │ 📷 MISSION VIEWPORT (Live Sandbox Cameras)       │ │
