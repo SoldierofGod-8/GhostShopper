@@ -803,7 +803,18 @@ export class GhostShopperApp {
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({ detail: 'Search request failed' }));
-        throw new Error(err.detail || 'Search request failed');
+        // FastAPI returns `detail` as a plain string for normal HTTP errors, but
+        // as an array of {loc, msg, ...} objects for 422 validation failures.
+        // Passing that array straight to Error() renders as "[object Object]",
+        // which is why a rejected query looked like the search silently broke.
+        let message = 'Search request failed';
+        if (typeof err.detail === 'string' && err.detail.trim()) {
+          message = err.detail;
+        } else if (Array.isArray(err.detail) && err.detail.length) {
+          const parts = err.detail.map((d) => (d && d.msg) || null).filter(Boolean);
+          if (parts.length) message = parts.join('; ');
+        }
+        throw new Error(message);
       }
 
       const data = await response.json();

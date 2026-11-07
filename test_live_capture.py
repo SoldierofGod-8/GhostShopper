@@ -10,6 +10,7 @@ import asyncio
 import os
 import shutil
 import sys
+import time
 import tempfile
 from pathlib import Path
 
@@ -40,11 +41,13 @@ def check(label, cond, extra=""):
 class FakeSandboxManager:
     """Stands in for SandboxManager; writes a real PNG like scrape.js does."""
 
-    def __init__(self, workspace, *, should_fail=False, should_timeout=False):
+    def __init__(self, workspace, *, should_fail=False, should_timeout=False,
+                 should_exit_early=False):
         self.workspace = Path(workspace)
         self.client = object()          # truthy => "Docker is available"
         self.should_fail = should_fail
         self.should_timeout = should_timeout
+        self.should_exit_early = should_exit_early
         self.created = []
         self.purged = []
         self.last_env = None
@@ -78,10 +81,20 @@ class FakeApi:
         task_id = self.owner.last_env["TASK_ID"]
         ws = self.owner.last_env["WORKSPACE_DIR"]
         check("container WORKSPACE_DIR is the mount point", ws == "/app/workspace", ws)
-        if not self.owner.should_timeout:
+        if not self.owner.should_timeout and not self.owner.should_exit_early:
             d = self.workspace / task_id
             d.mkdir(parents=True, exist_ok=True)
             (d / "screenshot.png").write_bytes(TINY_PNG)
+
+    def exec_inspect(self, exec_id):
+        """Mimic docker-py's exec state probe.
+
+        With should_exit_early the worker is already dead and never produced an
+        artifact - the situation that used to stall for the whole timeout.
+        """
+        if self.owner.should_exit_early:
+            return {"Running": False, "ExitCode": 1}
+        return {"Running": True, "ExitCode": 0}
 
 
 def install_fake(orch, workspace, **kw):
@@ -148,6 +161,22 @@ async def main():
         out = await _capture_live_screenshot("t-timeout", "https://www.amazon.com/dp/Y", Path(tmp) / "t-timeout")
         check("returns None on timeout", out is None)
         check("container still purged after timeout", len(fake.purged) == 1, str(fake.purged))
+        orchestrator.settings.live_capture_timeout_seconds = 15
+
+        # --- 4b. A dead worker must NOT burn the whole timeout --------------
+        # Regression guard: the artifact poll loop used to keep looping until the
+        # deadline even after the scraper process had exited, so a bot-blocked or
+        # crashing capture stalled the entire search for the full timeout.
+        orchestrator.settings.live_capture_timeout_seconds = 30
+        fake = install_fake(orchestrator, tmp, should_exit_early=True)
+        started = time.monotonic()
+        out = await _capture_live_screenshot("t-dead", "https://www.amazon.com/dp/Z", Path(tmp) / "t-dead")
+        elapsed = time.monotonic() - started
+        check("returns None when the worker dies with no artifact", out is None)
+        check("does not wait out the full 30s timeout", elapsed < 5.0, f"{elapsed:.2f}s")
+        check("no artifact written after early exit",
+              not (Path(tmp) / "t-dead" / "screenshot.png").exists())
+        check("container purged after early exit", len(fake.purged) == 1, str(fake.purged))
         orchestrator.settings.live_capture_timeout_seconds = 15
 
     finally:
