@@ -566,35 +566,38 @@ export class TaskCard {
    */
   static renderApprovalCard(approval, onApprove, onReject) {
     const card = document.createElement('div');
+    const realTaskId = approval.task_id || approval.taskId || 'task-unknown';
     card.className = 'approval-item-card';
-    card.id = `approval-card-${approval.taskId}`;
+    card.id = `approval-card-${realTaskId}`;
 
-    const containerId = escapeHtml(approval.containerId || 'container-sec0');
-    const reason = escapeHtml(approval.reason || 'Bot detection trigger / Security challenge require human authorization.');
-    const taskId = escapeHtml(approval.taskId);
-    const screenshot = approval.screenshot || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="90"><rect width="100%" height="100%" fill="%230f172a"/><text x="50%" y="50%" fill="%23ff6b35" font-size="11" text-anchor="middle" font-family="monospace">CHALLENGE DETECTED</text></svg>';
+    const containerId = escapeHtml(approval.container_id || approval.containerId || `container-${realTaskId.substring(0, 6)}`);
+    const reason = escapeHtml(approval.reason || 'Bot detection trigger / Security challenge requires human authorization.');
+    const safeTaskId = escapeHtml(realTaskId);
+    const screenshot = approval.screenshot || approval.screenshot_path || (`/api/screenshot/${realTaskId}`);
 
     card.innerHTML = `
       <div class="approval-header">
         <div class="approval-title-group">
           <span class="approval-badge-warning">Human Action Required</span>
-          <span class="mono" style="color: var(--accent-cyan); font-size: 0.8rem; font-weight: 700;">${containerId}</span>
+          <span class="mono" style="color: var(--brand-primary); font-size: 0.82rem; font-weight: 700;">${containerId}</span>
         </div>
-        <span class="mono" style="font-size: 0.7rem; color: var(--text-muted);">Task ID: ${taskId.substring(0, 8)}</span>
+        <span class="mono" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Task: ${safeTaskId.substring(0, 12)}</span>
       </div>
       <div class="approval-content-grid">
-        <img class="approval-preview-thumb" src="${screenshot}" alt="Defense Challenge" title="Click to view full preview">
+        <img class="approval-preview-thumb" src="${screenshot}" alt="Defense Challenge" title="Click to view full preview" onerror="this.src='/api/screenshot/${safeTaskId}'">
         <div class="approval-meta-text">
-          <div class="approval-reason">${reason}</div>
-          <div class="approval-subtext">Agent paused execution awaiting resolution override or bypass authorization.</div>
+          <div class="approval-reason" style="font-weight: 700; color: #dc2626; margin-bottom: 4px;">⚠️ ${reason}</div>
+          <div class="approval-subtext" style="color: var(--text-secondary); font-size: 0.8rem; line-height: 1.4;">
+            Retailer firewall or CAPTCHA paused this sandbox. Click <strong>Authorize / Resume</strong> to solve and continue, or <strong>Abort / Reject</strong> to isolate and wipe container memory.
+          </div>
         </div>
       </div>
-      <div class="approval-actions">
-        <button class="btn btn-danger btn-sm btn-reject" type="button">
-          Abort / Reject Task
+      <div class="approval-actions" style="display: flex; gap: 10px; margin-top: 12px;">
+        <button class="btn btn-danger btn-sm btn-reject" type="button" style="flex: 1; padding: 8px 14px;">
+          ✕ Abort / Reject Task
         </button>
-        <button class="btn btn-success btn-sm btn-approve" type="button">
-          Authorize / Resume Task
+        <button class="btn btn-success btn-sm btn-approve" type="button" style="flex: 1; padding: 8px 14px; background: #16a34a; color: white;">
+          ✓ Authorize / Resume Task
         </button>
       </div>
     `;
@@ -605,10 +608,10 @@ export class TaskCard {
     const thumbImg = card.querySelector('.approval-preview-thumb');
 
     if (approveBtn) {
-      approveBtn.addEventListener('click', () => onApprove(approval.taskId));
+      approveBtn.addEventListener('click', () => onApprove(realTaskId));
     }
     if (rejectBtn) {
-      rejectBtn.addEventListener('click', () => onReject(approval.taskId));
+      rejectBtn.addEventListener('click', () => onReject(realTaskId));
     }
     if (thumbImg && approval.screenshot) {
       thumbImg.addEventListener('click', () => {

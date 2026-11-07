@@ -1554,3 +1554,25 @@ html, body {
   fill: #15803d;
   flex-shrink: 0;
 }
+
+/* HITL Action Required Badge Button on Competitor Cards */
+.store-card-provenance.synthetic.btn-hitl-trigger {
+  cursor: pointer;
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+  border: 1px solid #fecaca !important;
+  font-weight: 700 !important;
+  padding: 3px 8px !important;
+  border-radius: var(--radius-full) !important;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.store-card-provenance.synthetic.btn-hitl-trigger:hover {
+  background: #fee2e2 !important;
+  border-color: #fca5a5 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.2);
+}

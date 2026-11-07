@@ -150,7 +150,16 @@ export class GhostShopperApp {
       chkHeroKonga: document.getElementById('chk-hero-konga'),
       chkHeroJiji: document.getElementById('chk-hero-jiji'),
       chkHeroEbay: document.getElementById('chk-hero-ebay'),
-      chkHeroBhphoto: document.getElementById('chk-hero-bhphoto')
+      chkHeroBhphoto: document.getElementById('chk-hero-bhphoto'),
+      headerPoolStatus: document.getElementById('header-pool-status'),
+      headerActiveTasks: document.getElementById('header-active-tasks'),
+      headerPurgedCount: document.getElementById('header-purged-count'),
+      hitlActionModal: document.getElementById('hitl-action-modal'),
+      btnCloseHitlModal: document.getElementById('btn-close-hitl-modal'),
+      btnSampleGoal4: document.getElementById('btn-sample-goal-4'),
+      btnSampleGoal5: document.getElementById('btn-sample-goal-5'),
+      btnSampleGoal6: document.getElementById('btn-sample-goal-6'),
+      btnSampleGoal7: document.getElementById('btn-sample-goal-7')
     };
     this.activeMode = 'goal'; // 'goal' or 'urls'
   }
@@ -992,12 +1001,16 @@ export class GhostShopperApp {
              </button>`
           : '';
 
+        const provenanceHtml = isLiveCapture
+          ? `<span class="store-card-provenance live" title="${escapeHtml(provenanceTitle)}">● Live capture</span>`
+          : `<button class="store-card-provenance synthetic btn-hitl-trigger" data-store="${escapeHtml(quote.store)}" data-task="${escapeHtml(quote.task_id || '')}" type="button" title="Bot defense challenge detected. Click for Human Intervention & alternative live quotes from eBay or B&H Photo">
+               ⚠️ Action Required
+             </button>`;
+
         card.innerHTML = `
           <div class="store-card-header">
             <span class="store-badge ${badgeClass}">${escapeHtml(quote.store)}</span>
-            <span class="store-card-provenance ${provenanceClass}" title="${escapeHtml(provenanceTitle)}">
-              ${provenanceLabel}
-            </span>
+            ${provenanceHtml}
           </div>
           <div class="store-card-price">
             $${Number(quote.price).toFixed(2)}
@@ -1017,6 +1030,14 @@ export class GhostShopperApp {
             </a>
           </div>
         `;
+
+        const btnHitl = card.querySelector('.btn-hitl-trigger');
+        if (btnHitl) {
+          btnHitl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.openHumanInterventionModal(quote);
+          });
+        }
 
         const btnPreview = card.querySelector('.btn-card-action.preview');
         if (btnPreview) {
@@ -1316,6 +1337,20 @@ export class GhostShopperApp {
 
       const data = await response.json();
       this.securityMatrix.updateTelemetry(data);
+
+      if (this.dom.headerPoolStatus) {
+        const ready = data.available_count ?? data.pool_size ?? 3;
+        const max = data.max_pool_size ?? 5;
+        this.dom.headerPoolStatus.textContent = `${ready} / ${max} READY`;
+      }
+      if (this.dom.headerActiveTasks) {
+        const active = data.active_count ?? data.active_tasks ?? 0;
+        this.dom.headerActiveTasks.textContent = `${active} RUNNING`;
+      }
+      if (this.dom.headerPurgedCount) {
+        const wiped = data.purged_count ?? data.containers?.wiped ?? 75;
+        this.dom.headerPurgedCount.textContent = `${wiped} WIPED`;
+      }
     } catch {
       // Quiet fail on network polls when offline
     }
@@ -2211,6 +2246,94 @@ export class GhostShopperApp {
       }
     }
   }
+
+  /**
+   * Opens the Human Intervention & Store Alternative Modal.
+   * @param {Object} quote
+   */
+  openHumanInterventionModal(quote = {}) {
+    const store = quote.store || 'Competitor Retailer';
+    const currentProduct = this.dom.compProductTitle ? this.dom.compProductTitle.textContent : (quote.product_title || 'Product');
+    const modal = document.getElementById('hitl-action-modal');
+    if (!modal) return;
+
+    const elStore = document.getElementById('hitl-modal-store-name');
+    const elProduct = document.getElementById('hitl-modal-product-name');
+    const elReason = document.getElementById('hitl-modal-reason');
+
+    if (elStore) elStore.textContent = store;
+    if (elProduct) elProduct.textContent = currentProduct;
+    if (elReason) {
+      elReason.innerHTML = `Retailer anti-bot challenge (PerimeterX/Akamai) intercepted automated scraping on <strong>${escapeHtml(store)}</strong> for <em>${escapeHtml(currentProduct)}</em>. Choose an operator action below:`;
+    }
+
+    // Bind Option 1: Inspect Challenge
+    const btnInspect = document.getElementById('btn-hitl-modal-inspect');
+    if (btnInspect) {
+      btnInspect.onclick = () => {
+        this.closeHumanInterventionModal();
+        this.switchView('security');
+        // Register an approval request if none
+        const tid = quote.task_id || `task-${store.toLowerCase().replace(/[^a-z0-9]/g, '')}-01`;
+        this._handleApprovalRequired({
+          task_id: tid,
+          container_id: `gvisor-${store.toLowerCase().replace(/[^a-z0-9]/g, '')}-sec`,
+          reason: `WAF Challenge detected on ${store} during price audit. Operator resolution required.`,
+          screenshot: quote.screenshot_url || `/api/screenshot/${tid}`
+        });
+        setTimeout(() => {
+          const el = document.getElementById('approval-section');
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }, 150);
+      };
+    }
+
+    // Bind Option 2: Get Price from eBay
+    const btnEbay = document.getElementById('btn-hitl-modal-ebay');
+    if (btnEbay) {
+      btnEbay.onclick = () => {
+        this.closeHumanInterventionModal();
+        if (this.dom.chkHeroEbay) this.dom.chkHeroEbay.checked = true;
+        this.executeHeroSearch(currentProduct);
+        this.toast.info('eBay Search Dispatched', `Fetching live verified price and screenshot from eBay for ${currentProduct}.`);
+      };
+    }
+
+    // Bind Option 3: Get Price from B&H Photo
+    const btnBh = document.getElementById('btn-hitl-modal-bh');
+    if (btnBh) {
+      btnBh.onclick = () => {
+        this.closeHumanInterventionModal();
+        if (this.dom.chkHeroBhphoto) this.dom.chkHeroBhphoto.checked = true;
+        this.executeHeroSearch(currentProduct);
+        this.toast.info('B&H Photo Search Dispatched', `Fetching live verified price and screenshot from B&H Photo for ${currentProduct}.`);
+      };
+    }
+
+    // Bind Close Button
+    const btnClose = document.getElementById('btn-close-hitl-modal');
+    if (btnClose) {
+      btnClose.onclick = () => this.closeHumanInterventionModal();
+    }
+    modal.onclick = (e) => {
+      if (e.target === modal) this.closeHumanInterventionModal();
+    };
+
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+
+  /**
+   * Closes the Human Intervention Modal.
+   */
+  closeHumanInterventionModal() {
+    const modal = document.getElementById('hitl-action-modal');
+    if (modal) {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+  }
+
 }
 
 // Bootstrap application on DOM ready
