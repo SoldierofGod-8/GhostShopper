@@ -501,6 +501,9 @@ html, body {
 .store-badge.bestbuy { background: #0046be; color: #ffffff; }
 .store-badge.walmart { background: #0071dc; color: #ffffff; }
 .store-badge.target { background: #cc0000; color: #ffffff; }
+.store-badge.jumia { background: #f68b1e; color: #ffffff; }
+.store-badge.konga { background: #ed017f; color: #ffffff; }
+.store-badge.jiji { background: #3db83a; color: #ffffff; }
 .store-badge.generic { background: #2563eb; color: #ffffff; }
 
 .store-card-price {

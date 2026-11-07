@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap">
 
-  <link rel="stylesheet" href="css/dashboard.css?v=2.7.0">
+  <link rel="stylesheet" href="css/dashboard.css?v=2.8.0">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔮</text></svg>">
 </head>
 <body>
@@ -97,23 +97,36 @@
 
         <!-- Stores Selector & Quick Chips Row -->
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
-          <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
             <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em;">Target Stores:</span>
-            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--text-primary);">
-              <input type="checkbox" id="chk-hero-amazon" checked style="accent-color: var(--brand-primary); width: 16px; height: 16px;">
+            <label style="display: flex; align-items: center; gap: 5px; font-size: 0.82rem; font-weight: 600; cursor: pointer; color: var(--text-primary);">
+              <input type="checkbox" id="chk-hero-amazon" checked style="accent-color: var(--brand-primary); width: 15px; height: 15px;">
               <span>Amazon</span>
             </label>
-            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--text-primary);">
-              <input type="checkbox" id="chk-hero-bestbuy" checked style="accent-color: var(--brand-primary); width: 16px; height: 16px;">
+            <label style="display: flex; align-items: center; gap: 5px; font-size: 0.82rem; font-weight: 600; cursor: pointer; color: var(--text-primary);">
+              <input type="checkbox" id="chk-hero-bestbuy" checked style="accent-color: var(--brand-primary); width: 15px; height: 15px;">
               <span>Best Buy</span>
             </label>
-            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--text-primary);">
-              <input type="checkbox" id="chk-hero-walmart" checked style="accent-color: var(--brand-primary); width: 16px; height: 16px;">
+            <label style="display: flex; align-items: center; gap: 5px; font-size: 0.82rem; font-weight: 600; cursor: pointer; color: var(--text-primary);">
+              <input type="checkbox" id="chk-hero-walmart" checked style="accent-color: var(--brand-primary); width: 15px; height: 15px;">
               <span>Walmart</span>
             </label>
-            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--text-primary);">
-              <input type="checkbox" id="chk-hero-target" checked style="accent-color: var(--brand-primary); width: 16px; height: 16px;">
+            <label style="display: flex; align-items: center; gap: 5px; font-size: 0.82rem; font-weight: 600; cursor: pointer; color: var(--text-primary);">
+              <input type="checkbox" id="chk-hero-target" checked style="accent-color: var(--brand-primary); width: 15px; height: 15px;">
               <span>Target</span>
+            </label>
+            <span style="display: inline-block; width: 1px; height: 16px; background: var(--border-medium); margin: 0 4px;"></span>
+            <label style="display: flex; align-items: center; gap: 5px; font-size: 0.82rem; font-weight: 600; cursor: pointer; color: var(--text-primary);">
+              <input type="checkbox" id="chk-hero-jumia" checked style="accent-color: #f68b1e; width: 15px; height: 15px;">
+              <span style="color: #f68b1e; font-weight: 700;">Jumia</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 5px; font-size: 0.82rem; font-weight: 600; cursor: pointer; color: var(--text-primary);">
+              <input type="checkbox" id="chk-hero-konga" checked style="accent-color: #ed017f; width: 15px; height: 15px;">
+              <span style="color: #ed017f; font-weight: 700;">Konga</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 5px; font-size: 0.82rem; font-weight: 600; cursor: pointer; color: var(--text-primary);">
+              <input type="checkbox" id="chk-hero-jiji" checked style="accent-color: #3db83a; width: 15px; height: 15px;">
+              <span style="color: #3db83a; font-weight: 700;">Jiji.ng</span>
             </label>
           </div>
 
@@ -121,9 +134,10 @@
             <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em;">Trending:</span>
             <button class="quick-chip-btn" data-query="Sony WH-1000XM5" type="button">Sony WH-1000XM5</button>
             <button class="quick-chip-btn" data-query="Apple AirPods Pro 2" type="button">AirPods Pro 2</button>
+            <button class="quick-chip-btn" data-query="Apple iPhone 15 Pro" type="button">iPhone 15 Pro</button>
+            <button class="quick-chip-btn" data-query="Samsung Galaxy S24 Ultra" type="button">Galaxy S24 Ultra</button>
+            <button class="quick-chip-btn" data-query="Starlink Standard Kit" type="button">Starlink Standard</button>
             <button class="quick-chip-btn" data-query="Apple MacBook Air M3" type="button">MacBook Air M3</button>
-            <button class="quick-chip-btn" data-query="Nintendo Switch OLED" type="button">Switch OLED</button>
-            <button class="quick-chip-btn" data-query="Nike Dunk Low" type="button">Nike Dunk Low</button>
           </div>
         </div>
       </section>
@@ -946,6 +960,6 @@
   </div>
 
   <!-- JavaScript ES Modules -->
-  <script type="module" src="js/app.js?v=2.7.0"></script>
+  <script type="module" src="js/app.js?v=2.8.0"></script>
 </body>
 </html>

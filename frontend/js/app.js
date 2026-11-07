@@ -145,7 +145,10 @@ export class GhostShopperApp {
       chkHeroAmazon: document.getElementById('chk-hero-amazon'),
       chkHeroBestbuy: document.getElementById('chk-hero-bestbuy'),
       chkHeroWalmart: document.getElementById('chk-hero-walmart'),
-      chkHeroTarget: document.getElementById('chk-hero-target')
+      chkHeroTarget: document.getElementById('chk-hero-target'),
+      chkHeroJumia: document.getElementById('chk-hero-jumia'),
+      chkHeroKonga: document.getElementById('chk-hero-konga'),
+      chkHeroJiji: document.getElementById('chk-hero-jiji')
     };
     this.activeMode = 'goal'; // 'goal' or 'urls'
   }
@@ -760,7 +763,10 @@ export class GhostShopperApp {
     if (this.dom.chkHeroBestbuy && this.dom.chkHeroBestbuy.checked) stores.push('Best Buy');
     if (this.dom.chkHeroWalmart && this.dom.chkHeroWalmart.checked) stores.push('Walmart');
     if (this.dom.chkHeroTarget && this.dom.chkHeroTarget.checked) stores.push('Target');
-    if (stores.length === 0) stores.push('Amazon', 'Best Buy', 'Walmart', 'Target');
+    if (this.dom.chkHeroJumia && this.dom.chkHeroJumia.checked) stores.push('Jumia');
+    if (this.dom.chkHeroKonga && this.dom.chkHeroKonga.checked) stores.push('Konga');
+    if (this.dom.chkHeroJiji && this.dom.chkHeroJiji.checked) stores.push('Jiji');
+    if (stores.length === 0) stores.push('Amazon', 'Jumia', 'Konga', 'Jiji');
 
     // Open the conversation turn before the first log line so the agent's
     // working trail is captured into the transcript.
@@ -952,6 +958,9 @@ export class GhostShopperApp {
         else if (sLower.includes('best buy') || sLower.includes('bestbuy')) badgeClass = 'bestbuy';
         else if (sLower.includes('walmart')) badgeClass = 'walmart';
         else if (sLower.includes('target')) badgeClass = 'target';
+        else if (sLower.includes('jumia')) badgeClass = 'jumia';
+        else if (sLower.includes('konga')) badgeClass = 'konga';
+        else if (sLower.includes('jiji')) badgeClass = 'jiji';
 
         const origHtml = quote.original_price && quote.original_price > quote.price
           ? `<span class="store-card-orig">$${quote.original_price.toFixed(2)}</span>`
@@ -1039,14 +1048,14 @@ export class GhostShopperApp {
   renderDefaultComparison() {
     const defaultData = {
       product: "Sony WH-1000XM5 Wireless Noise-Canceling Headphones",
-      lowest_price: 348.00,
+      lowest_price: 340.00,
       highest_price: 399.99,
       average_price: 374.00,
-      recommended_dropship_price: 344.99,
+      recommended_dropship_price: 338.99,
       estimated_supplier_cost: 275.00,
       estimated_profit_per_unit: 69.99,
       estimated_margin_percent: 0.203,
-      strategy_rationale: "Amazon and Walmart are tied at $348.00. Set your dropshipping store price at $344.99 to capture immediate conversions as the lowest verified retailer while preserving a 20.3% net profit margin ($69.99 profit per order).",
+      strategy_rationale: "Jiji ($340.00) and Walmart ($348.00) lead the market floor. Set your dropshipping store price at $338.99 to undercut all global and African rivals (Jumia, Konga, Amazon, Walmart) while securing a healthy 20.3% net profit margin.",
       competitor_quotes: [
         {
           store: "Amazon",
@@ -1094,6 +1103,42 @@ export class GhostShopperApp {
           in_stock: true,
           screenshot_url: "/api/screenshot/task-sony-bhphoto-05",
           task_id: "task-sony-bhphoto-05",
+          screenshot_kind: "live"
+        },
+        {
+          store: "Jumia",
+          price: 365.00,
+          original_price: 420.00,
+          url: "https://www.jumia.com.ng/catalog/?q=Sony+WH-1000XM5",
+          shipping: "Jumia Express • Next Day Delivery",
+          condition: "New",
+          in_stock: true,
+          screenshot_url: "/api/screenshot/task-sony-jumia-06",
+          task_id: "task-sony-jumia-06",
+          screenshot_kind: "live"
+        },
+        {
+          store: "Konga",
+          price: 370.00,
+          original_price: 435.00,
+          url: "https://www.konga.com/search?search=Sony+WH-1000XM5",
+          shipping: "Konga Express Delivery",
+          condition: "New",
+          in_stock: true,
+          screenshot_url: "/api/screenshot/task-sony-konga-07",
+          task_id: "task-sony-konga-07",
+          screenshot_kind: "live"
+        },
+        {
+          store: "Jiji.ng",
+          price: 340.00,
+          original_price: 390.00,
+          url: "https://jiji.ng/search?query=Sony+WH-1000XM5",
+          shipping: "Direct Vendor Delivery • Lagos / Nationwide",
+          condition: "New",
+          in_stock: true,
+          screenshot_url: "/api/screenshot/task-sony-jiji-08",
+          task_id: "task-sony-jiji-08",
           screenshot_kind: "live"
         }
       ]

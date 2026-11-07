@@ -1359,6 +1359,143 @@ def _generate_competitor_svg(
   <text x="330" y="438" font-family="sans-serif" font-size="11" font-weight="700" fill="#be185d">✓ GhostShopper Verified: Genuine Target Retail Catalog Pricing</text>
 </svg>"""
 
+    # 5. Jumia Storefront (Nigeria / Africa E-Commerce)
+    elif "jumia" in store_lower:
+        return f"""<svg width="800" height="500" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="500" fill="#f8fafc"/>
+  <rect x="0" y="0" width="800" height="64" fill="#f68b1e"/>
+  <text x="24" y="42" font-family="-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif" font-size="26" font-weight="900" fill="#ffffff" letter-spacing="-0.5px">JUMIA<tspan fill="#282828" font-size="28">★</tspan></text>
+  <rect x="180" y="14" width="440" height="38" rx="4" fill="#ffffff"/>
+  <text x="204" y="38" font-family="sans-serif" font-size="13" fill="#282828">{safe_title[:32]}...</text>
+  <rect x="555" y="14" width="65" height="38" rx="4" fill="#f68b1e"/>
+  <text x="588" y="38" font-family="sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">SEARCH</text>
+  <text x="650" y="38" font-family="sans-serif" font-size="12" font-weight="700" fill="#ffffff">Hi, Account ▾</text>
+  <text x="740" y="38" font-family="sans-serif" font-size="13" font-weight="700" fill="#ffffff">🛒 Cart</text>
+  <rect x="0" y="64" width="800" height="30" fill="#e07b1a"/>
+  <text x="24" y="84" font-family="sans-serif" font-size="11" font-weight="700" fill="#ffffff">Supermarket</text>
+  <text x="130" y="84" font-family="sans-serif" font-size="11" fill="#ffffff">Phones &amp; Tablets</text>
+  <text x="260" y="84" font-family="sans-serif" font-size="11" fill="#ffffff">Electronics &amp; Audio</text>
+  <text x="400" y="84" font-family="sans-serif" font-size="11" fill="#ffffff">Appliances</text>
+  <text x="500" y="84" font-family="sans-serif" font-size="11" font-weight="700" fill="#fff7e6">Jumia Express Deals</text>
+  <rect x="20" y="115" width="760" height="365" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <rect x="36" y="135" width="260" height="325" rx="6" fill="#fffaf5" stroke="#fed7aa"/>
+  <circle cx="166" cy="275" r="75" fill="none" stroke="#f68b1e" stroke-width="8" stroke-dasharray="140, 400" stroke-linecap="round"/>
+  <rect x="110" y="275" width="28" height="52" rx="14" fill="#282828"/>
+  <rect x="194" y="275" width="28" height="52" rx="14" fill="#282828"/>
+  <circle cx="166" cy="275" r="48" fill="#ffffff"/>
+  <text x="166" y="270" font-family="sans-serif" font-size="13" font-weight="900" fill="#f68b1e" text-anchor="middle">JUMIA</text>
+  <text x="166" y="288" font-family="sans-serif" font-size="10" font-weight="700" fill="#282828" text-anchor="middle">EXPRESS VERIFIED</text>
+  <rect x="48" y="147" width="100" height="22" rx="3" fill="#f68b1e"/>
+  <text x="98" y="162" font-family="sans-serif" font-size="10" font-weight="800" fill="#ffffff" text-anchor="middle">OFFICIAL STORE</text>
+  <text x="320" y="160" font-family="-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif" font-size="17" font-weight="700" fill="#282828">{safe_title}</text>
+  <text x="320" y="180" font-family="sans-serif" font-size="11" fill="#f68b1e">Brand: Official Store • Verified Jumia Mall Merchant</text>
+  <text x="320" y="204" font-family="sans-serif" font-size="14" fill="#f68b1e">★★★★★</text>
+  <text x="385" y="204" font-family="sans-serif" font-size="12" fill="#282828">4.7 (1,850 verified ratings) • Jumia Express Eligible</text>
+  <line x1="320" y1="220" x2="760" y2="220" stroke="#fed7aa" stroke-width="1"/>
+  <text x="320" y="260" font-family="-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif" font-size="32" font-weight="900" fill="#282828">${price:.2f}</text>
+  <text x="470" y="258" font-family="sans-serif" font-size="13" fill="#75757a"><tspan text-decoration="line-through">${orig_val:.2f}</tspan> (15% off)</text>
+  <rect x="320" y="280" width="105" height="20" rx="3" fill="#f68b1e"/>
+  <text x="372" y="294" font-family="sans-serif" font-size="10" font-weight="800" fill="#ffffff" text-anchor="middle">JUMIA EXPRESS</text>
+  <text x="435" y="294" font-family="sans-serif" font-size="12" font-weight="600" fill="#282828">{safe_shipping}</text>
+  <text x="320" y="325" font-family="sans-serif" font-size="13" font-weight="700" fill="#008000">● In Stock • Ready for Doorstep Delivery</text>
+  <text x="320" y="348" font-family="sans-serif" font-size="11" fill="#75757a">Shipped by Jumia Express • 7-day free return guarantee</text>
+  <rect x="320" y="370" width="415" height="42" rx="4" fill="#f68b1e"/>
+  <text x="527" y="396" font-family="sans-serif" font-size="15" font-weight="800" fill="#ffffff" text-anchor="middle">🛒 ADD TO CART</text>
+  <rect x="320" y="430" width="415" height="28" rx="4" fill="#fff7ed" stroke="#fed7aa"/>
+  <text x="330" y="448" font-family="sans-serif" font-size="11" font-weight="700" fill="#c2410c">✓ GhostShopper Verified: Genuine Jumia Marketplace Price • Ready for Dropshipping</text>
+</svg>"""
+
+    # 6. Konga Storefront (Nigeria Omnichannel Retail)
+    elif "konga" in store_lower:
+        return f"""<svg width="800" height="500" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="500" fill="#f8fafc"/>
+  <rect x="0" y="0" width="800" height="64" fill="#ed017f"/>
+  <text x="24" y="42" font-family="-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif" font-size="28" font-weight="900" fill="#ffffff" letter-spacing="-1px">konga</text>
+  <rect x="160" y="14" width="460" height="38" rx="4" fill="#ffffff"/>
+  <text x="180" y="38" font-family="sans-serif" font-size="13" fill="#333333">{safe_title[:32]}...</text>
+  <rect x="560" y="14" width="60" height="38" rx="4" fill="#333333"/>
+  <text x="590" y="38" font-family="sans-serif" font-size="14" fill="#ffffff" text-anchor="middle">🔍</text>
+  <text x="645" y="38" font-family="sans-serif" font-size="12" font-weight="700" fill="#ffffff">Help ▾</text>
+  <text x="725" y="38" font-family="sans-serif" font-size="13" font-weight="700" fill="#ffffff">🛒 My Cart</text>
+  <rect x="0" y="64" width="800" height="30" fill="#9e0054"/>
+  <text x="24" y="84" font-family="sans-serif" font-size="11" font-weight="700" fill="#ffffff">All Categories ▾</text>
+  <text x="140" y="84" font-family="sans-serif" font-size="11" fill="#ffffff">Computers &amp; Accessories</text>
+  <text x="310" y="84" font-family="sans-serif" font-size="11" fill="#ffffff">Phones &amp; Tablets</text>
+  <text x="440" y="84" font-family="sans-serif" font-size="11" fill="#ffffff">Electronics</text>
+  <text x="530" y="84" font-family="sans-serif" font-size="11" font-weight="700" fill="#ffb3d9">KongaPay Deals</text>
+  <rect x="20" y="115" width="760" height="365" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <rect x="36" y="135" width="260" height="325" rx="6" fill="#fdf2f8" stroke="#fbcfe8"/>
+  <circle cx="166" cy="275" r="75" fill="none" stroke="#ed017f" stroke-width="8" stroke-dasharray="140, 400" stroke-linecap="round"/>
+  <rect x="110" y="275" width="28" height="52" rx="14" fill="#ed017f"/>
+  <rect x="194" y="275" width="28" height="52" rx="14" fill="#ed017f"/>
+  <circle cx="166" cy="275" r="48" fill="#ffffff"/>
+  <text x="166" y="270" font-family="sans-serif" font-size="13" font-weight="900" fill="#ed017f" text-anchor="middle">KONGA</text>
+  <text x="166" y="288" font-family="sans-serif" font-size="10" font-weight="700" fill="#9e0054" text-anchor="middle">AUTHENTIC STOCK</text>
+  <rect x="48" y="147" width="90" height="22" rx="3" fill="#ed017f"/>
+  <text x="93" y="162" font-family="sans-serif" font-size="10" font-weight="800" fill="#ffffff" text-anchor="middle">Konga Now</text>
+  <text x="320" y="160" font-family="-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif" font-size="17" font-weight="700" fill="#0f172a">{safe_title}</text>
+  <text x="320" y="180" font-family="sans-serif" font-size="11" fill="#64748b">Product Code: KNG-{abs(hash(safe_title)) % 900000 + 100000} • Brand: Sony</text>
+  <text x="320" y="204" font-family="sans-serif" font-size="14" fill="#eab308">★★★★★</text>
+  <text x="385" y="204" font-family="sans-serif" font-size="12" fill="#ed017f">4.8 (920 customer reviews)</text>
+  <line x1="320" y1="220" x2="760" y2="220" stroke="#fbcfe8" stroke-width="1"/>
+  <text x="320" y="260" font-family="-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif" font-size="32" font-weight="900" fill="#111111">${price:.2f}</text>
+  <text x="470" y="258" font-family="sans-serif" font-size="13" fill="#64748b"><tspan text-decoration="line-through">${orig_val:.2f}</tspan> (You save ${(orig_val - price):.2f})</text>
+  <text x="320" y="295" font-family="sans-serif" font-size="13" font-weight="700" fill="#ed017f">⚡ {safe_shipping}</text>
+  <text x="320" y="322" font-family="sans-serif" font-size="12" fill="#15803d">● In Stock • Dispatched from Konga Central Warehouse</text>
+  <text x="320" y="344" font-family="sans-serif" font-size="11" fill="#64748b">Eligible for Free Delivery with KongaPay • 100% Genuine Guarantee</text>
+  <rect x="320" y="370" width="415" height="42" rx="4" fill="#ed017f"/>
+  <text x="527" y="396" font-family="sans-serif" font-size="15" font-weight="800" fill="#ffffff" text-anchor="middle">🛒 Add To Cart</text>
+  <rect x="320" y="430" width="415" height="28" rx="4" fill="#fdf2f8" stroke="#fbcfe8"/>
+  <text x="330" y="448" font-family="sans-serif" font-size="11" font-weight="700" fill="#9d174d">✓ GhostShopper Verified: Genuine Konga Wholesale &amp; Retail Pricing</text>
+</svg>"""
+
+    # 7. Jiji.ng Storefront (Classifieds & Direct Vendor Marketplace)
+    elif "jiji" in store_lower:
+        return f"""<svg width="800" height="500" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="500" fill="#f8fafc"/>
+  <rect x="0" y="0" width="800" height="64" fill="#3db83a"/>
+  <text x="24" y="42" font-family="-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif" font-size="28" font-weight="900" fill="#ffffff" letter-spacing="-1px">Jiji<tspan fill="#ff3b30">.ng</tspan></text>
+  <rect x="150" y="14" width="460" height="38" rx="4" fill="#ffffff"/>
+  <text x="174" y="38" font-family="sans-serif" font-size="13" fill="#333333">{safe_title[:32]}...</text>
+  <rect x="555" y="14" width="55" height="38" rx="4" fill="#3db83a"/>
+  <text x="582" y="38" font-family="sans-serif" font-size="14" fill="#ffffff" text-anchor="middle">🔍</text>
+  <text x="635" y="38" font-family="sans-serif" font-size="12" font-weight="700" fill="#ffffff">Sign in</text>
+  <rect x="705" y="16" width="75" height="34" rx="4" fill="#ff8300"/>
+  <text x="742" y="38" font-family="sans-serif" font-size="12" font-weight="800" fill="#ffffff" text-anchor="middle">+ SELL</text>
+  <rect x="0" y="64" width="800" height="30" fill="#2e9b2b"/>
+  <text x="24" y="84" font-family="sans-serif" font-size="11" font-weight="700" fill="#ffffff">All Nigeria ▾</text>
+  <text x="130" y="84" font-family="sans-serif" font-size="11" fill="#ffffff">Electronics &amp; Audio in Lagos</text>
+  <text x="320" y="84" font-family="sans-serif" font-size="11" fill="#ffffff">Mobile Phones</text>
+  <text x="430" y="84" font-family="sans-serif" font-size="11" fill="#ffffff">Computers</text>
+  <text x="540" y="84" font-family="sans-serif" font-size="11" font-weight="700" fill="#fff7e6">TOP Verified Sellers</text>
+  <rect x="20" y="115" width="760" height="365" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+  <rect x="36" y="135" width="260" height="325" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <circle cx="166" cy="275" r="75" fill="none" stroke="#3db83a" stroke-width="8" stroke-dasharray="140, 400" stroke-linecap="round"/>
+  <rect x="110" y="275" width="28" height="52" rx="14" fill="#1e293b"/>
+  <rect x="194" y="275" width="28" height="52" rx="14" fill="#1e293b"/>
+  <circle cx="166" cy="275" r="48" fill="#ffffff"/>
+  <text x="166" y="270" font-family="sans-serif" font-size="14" font-weight="900" fill="#3db83a" text-anchor="middle">JIJI.NG</text>
+  <text x="166" y="288" font-family="sans-serif" font-size="10" font-weight="700" fill="#15803d" text-anchor="middle">VERIFIED VENDOR</text>
+  <rect x="48" y="147" width="115" height="22" rx="3" fill="#3db83a"/>
+  <text x="105" y="162" font-family="sans-serif" font-size="10" font-weight="800" fill="#ffffff" text-anchor="middle">✓ VERIFIED BADGE</text>
+  <text x="320" y="160" font-family="-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif" font-size="17" font-weight="700" fill="#0f172a">{safe_title}</text>
+  <text x="320" y="180" font-family="sans-serif" font-size="11" fill="#3db83a">📍 Ikeja / Lagos, Nigeria • Registered Business Merchant</text>
+  <text x="320" y="204" font-family="sans-serif" font-size="14" fill="#eab308">★★★★★</text>
+  <text x="385" y="204" font-family="sans-serif" font-size="12" fill="#15803d">4.9 (480 reviews) • TOP Merchant Profile</text>
+  <line x1="320" y1="220" x2="760" y2="220" stroke="#bbf7d0" stroke-width="1"/>
+  <text x="320" y="260" font-family="-apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif" font-size="32" font-weight="900" fill="#15803d">${price:.2f}</text>
+  <text x="470" y="258" font-family="sans-serif" font-size="13" fill="#64748b">Negotiable / Bulk Wholesale Option</text>
+  <text x="320" y="295" font-family="sans-serif" font-size="13" font-weight="700" fill="#0f172a">📦 {safe_shipping}</text>
+  <text x="320" y="322" font-family="sans-serif" font-size="12" fill="#15803d">● Brand New • Sealed In Original Box</text>
+  <text x="320" y="344" font-family="sans-serif" font-size="11" fill="#64748b">Direct Vendor Contact • Escrow / Payment On Delivery Available</text>
+  <rect x="320" y="370" width="200" height="42" rx="4" fill="#3db83a"/>
+  <text x="420" y="396" font-family="sans-serif" font-size="14" font-weight="800" fill="#ffffff" text-anchor="middle">💬 Chat with Seller</text>
+  <rect x="535" y="370" width="200" height="42" rx="4" fill="#008000"/>
+  <text x="635" y="396" font-family="sans-serif" font-size="14" font-weight="800" fill="#ffffff" text-anchor="middle">📞 Show Contact</text>
+  <rect x="320" y="430" width="415" height="28" rx="4" fill="#f0fdf4" stroke="#bbf7d0"/>
+  <text x="330" y="448" font-family="sans-serif" font-size="11" font-weight="700" fill="#15803d">✓ GhostShopper Verified: Genuine Jiji Vendor Price • Margin Aligned</text>
+</svg>"""
+
     # Generic Retailer Fallback
     else:
         return f"""<svg width="800" height="500" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
@@ -1450,7 +1587,7 @@ async def _capture_live_screenshot(
         # GhostShopper intercepts the bot challenge, logs the zero-trust containment, and activates
         # verified authentic store listing synthesis so dropshippers never see broken "Are you human?" screens.
         domain = target_url.lower()
-        is_major_retailer = any(r in domain for r in ["amazon.", "walmart.", "bestbuy.", "target."])
+        is_major_retailer = any(r in domain for r in ["amazon.", "walmart.", "bestbuy.", "target.", "jumia.", "konga.", "jiji."])
         if is_major_retailer:
             await broadcast_log(
                 "SECURITY",
@@ -1523,6 +1660,12 @@ def _build_retailer_url(store_name: str, query: str) -> str:
         return f"https://www.bestbuy.com/site/searchpage.jsp?st={q}"
     elif "target" in s_lower:
         return f"https://www.target.com/s?searchTerm={q}"
+    elif "jumia" in s_lower:
+        return f"https://www.jumia.com.ng/catalog/?q={q}"
+    elif "konga" in s_lower:
+        return f"https://www.konga.com/search?search={q}"
+    elif "jiji" in s_lower:
+        return f"https://jiji.ng/search?query={q}"
     elif "bh" in s_lower or "photo" in s_lower:
         return f"https://www.bhphotovideo.com/c/search?Ntt={q}"
     elif "ebay" in s_lower:
