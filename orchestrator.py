@@ -1659,6 +1659,28 @@ def _select_median_item(items: list) -> Optional[dict]:
     return None
 
 
+_playwright_missing_warned = False
+
+
+def _warn_playwright_missing() -> None:
+    """Log an actionable warning the first time live capture finds Playwright absent.
+
+    Called once rather than per-URL because /api/search fires every capture in
+    parallel; repeating this seven times would bury the rest of the log.
+    """
+    global _playwright_missing_warned
+    if _playwright_missing_warned:
+        return
+    _playwright_missing_warned = True
+    logger.warning(
+        "LIVE CAPTURE UNAVAILABLE: the 'playwright' package could not be imported, "
+        "so every screenshot is falling back to a generated placeholder labelled "
+        "'Simulated'. Fix with:  pip install playwright==1.64.1  "
+        "(system Microsoft Edge is used, so no browser download is needed). "
+        "Set ENABLE_LIVE_CAPTURE=false to disable capture deliberately."
+    )
+
+
 async def _capture_live_screenshot(
     task_id: str,
     target_url: str,
@@ -1873,6 +1895,8 @@ async def _capture_live_screenshot(
                 except Exception as nav_err:
                     logger.warning("Navigation error during Playwright capture of %s: %s", target_url, nav_err)
                     await browser.close()
+        except ImportError:
+            _warn_playwright_missing()
         except Exception as exc:
             logger.warning("Playwright local capture initialization failed for %s: %s", target_url, exc)
 
