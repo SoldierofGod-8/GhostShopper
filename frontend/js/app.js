@@ -807,7 +807,11 @@ export class GhostShopperApp {
         // as an array of {loc, msg, ...} objects for 422 validation failures.
         // Passing that array straight to Error() renders as "[object Object]",
         // which is why a rejected query looked like the search silently broke.
-        let message = 'Search request failed';
+        // Always carry the HTTP status. When the body is not JSON - a proxy
+        // error page, an empty 500, a dropped connection - this is the only
+        // clue the user gets, and "Search request failed" alone tells nobody
+        // whether to look at the browser or the server.
+        let message = `Search request failed (HTTP ${response.status})`;
         if (typeof err.detail === 'string' && err.detail.trim()) {
           message = err.detail;
         } else if (Array.isArray(err.detail) && err.detail.length) {
