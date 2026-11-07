@@ -23,8 +23,8 @@ Source: the live hackathon page.
 | # | Requirement | Status |
 |---|---|---|
 | 1 | GitHub repository with setup and documentation | 🟡 Repo exists, docs exist, but quick start was broken (now fixed) |
-| 2 | Vultr VM backend deployment | ❌ Not done |
-| 3 | Public demo URL | ❌ Not done |
+| 2 | Vultr VM backend deployment | ✅ Live on Vultr Cloud Compute (140.82.12.47:8000) |
+| 3 | Public demo URL | ✅ Live at [http://140.82.12.47:8000/](http://140.82.12.47:8000/) |
 | 4 | Recorded demo video | ❌ Not done (script exists) |
 | 5 | Clear architecture and use-case explanation | ✅ Strong — README + VULTR_SUBMISSION.md |
 | 6 | **One containment moment shown in the video** | 🔴 **Currently faked** — see §3 |

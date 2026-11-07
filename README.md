@@ -11,6 +11,10 @@
 [![Security Posture](https://img.shields.io/badge/Containment-Blast%20Radius%20Zero-00f0ff?style=for-the-badge)]()
 [![Target Audience](https://img.shields.io/badge/Target-Dropshippers%20%26%20AI%20Stores-00ff88?style=for-the-badge)]()
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI%20Async-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Live Demo](https://img.shields.io/badge/Public%20Demo-140.82.12.47%3A8000-007bfc?style=for-the-badge&logo=vultr)](http://140.82.12.47:8000/)
+
+> 🌐 **Live Public Demo**: [**http://140.82.12.47:8000/**](http://140.82.12.47:8000/)  
+> *Experience GhostShopper running live on Vultr Cloud Compute with real-time competitor price intelligence, median PDP inspection, and sandboxed browser execution.*
 
 <p align="center">
   <b>Empowering dropshippers and AI-powered dropshipping websites to safely monitor competitor prices, protect margins, and dynamically align store pricing with zero infrastructure risk.</b><br>
@@ -30,6 +34,7 @@
 ---
 
 ### 🏆 Hackathon Quick Links & Key Documents
+- 🌐 **[Live Public Demo (http://140.82.12.47:8000/)](http://140.82.12.47:8000/)**: Deployed and accessible live on Vultr Cloud Compute.
 - 📄 **[Official Hackathon Submission Document (`VULTR_SUBMISSION.md`)](file:///c:/Users/LJ/Documents/Wamise%20Tech/GhostShopper/VULTR_SUBMISSION.md)**: Full rubric audit, architectural deep-dive, and containment guarantees.
 - 🎬 **[Recorded Demo Video Script (`DEMO_VIDEO_SCRIPT.md`)](file:///c:/Users/LJ/Documents/Wamise%20Tech/GhostShopper/DEMO_VIDEO_SCRIPT.md)**: 2m45s step-by-step video script highlighting the **"Containment Moment"**.
 - 🚀 **[November 3rd Onboarding Guide (`VULTR_ONBOARDING_NOV3.md`)](file:///c:/Users/LJ/Documents/Wamise%20Tech/GhostShopper/VULTR_ONBOARDING_NOV3.md)**: How to plug in your Vultr credits in 60 seconds once issued.

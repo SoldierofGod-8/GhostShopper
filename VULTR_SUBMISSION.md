@@ -4,6 +4,7 @@
 > **Execution Pattern**: **Pattern B · Sandboxed Browser Use** (Comparison Shopper / Competitor Intelligence)  
 > **Target Audience**: Dropshippers & Owners of AI-Powered E-Commerce Stores (Dynamic Price Alignment)  
 > **Core Architecture**: Containment-First ("Blast Radius Zero")  
+> **Public Demo URL**: [**http://140.82.12.47:8000/**](http://140.82.12.47:8000/)  
 > **Infrastructure**: Vultr Cloud Compute + Vultr Serverless Inference (Vision AI) + gVisor (`runsc`)  
 
 ---
@@ -162,6 +163,12 @@ GhostShopper/
 ---
 
 ## 7. How to Run Locally & In Production
+
+### Option 0: Live Public Demo (Instant Access on Vultr)
+The application is deployed and actively running on Vultr Cloud Compute:
+- **Public Demo URL**: [**http://140.82.12.47:8000/**](http://140.82.12.47:8000/)
+- Instant access to the interactive Mission Control dashboard, real-time live browser capture, and containment telemetry.
+
 
 ### Option A: Immediate Local Run (Zero Cloud Accounts Required)
 ```bash
