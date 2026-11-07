@@ -22,9 +22,16 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends procps && \
     rm -rf /var/lib/apt/lists/*
 
-# Create non-root user 'ghostworker' with UID 1001 and matching GID
-RUN groupadd -g 1001 ghostworker && \
-    useradd -u 1001 -g ghostworker -m -s /bin/bash ghostworker
+# Create non-root user 'ghostworker'.
+#
+# Do NOT pin numeric UID/GID here: the upstream mcr.microsoft.com/playwright
+# base image already claims GID 1001, so `groupadd -g 1001` fails with
+# "GID '1001' already exists" and aborts the build at step 3/9. Every later
+# reference in this file (COPY --chown, chown -R) uses the user by name, so
+# the actual IDs are irrelevant. Both commands are also made idempotent.
+RUN set -eux; \
+    getent group ghostworker >/dev/null 2>&1 || groupadd ghostworker; \
+    getent passwd ghostworker >/dev/null 2>&1 || useradd -m -s /bin/bash -g ghostworker ghostworker
 
 # Set working directory
 WORKDIR /app
