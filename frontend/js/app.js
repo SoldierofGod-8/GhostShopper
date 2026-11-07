@@ -148,7 +148,9 @@ export class GhostShopperApp {
       chkHeroTarget: document.getElementById('chk-hero-target'),
       chkHeroJumia: document.getElementById('chk-hero-jumia'),
       chkHeroKonga: document.getElementById('chk-hero-konga'),
-      chkHeroJiji: document.getElementById('chk-hero-jiji')
+      chkHeroJiji: document.getElementById('chk-hero-jiji'),
+      chkHeroEbay: document.getElementById('chk-hero-ebay'),
+      chkHeroBhphoto: document.getElementById('chk-hero-bhphoto')
     };
     this.activeMode = 'goal'; // 'goal' or 'urls'
   }
@@ -766,7 +768,9 @@ export class GhostShopperApp {
     if (this.dom.chkHeroJumia && this.dom.chkHeroJumia.checked) stores.push('Jumia');
     if (this.dom.chkHeroKonga && this.dom.chkHeroKonga.checked) stores.push('Konga');
     if (this.dom.chkHeroJiji && this.dom.chkHeroJiji.checked) stores.push('Jiji');
-    if (stores.length === 0) stores.push('Amazon', 'Jumia', 'Konga', 'Jiji');
+    if (this.dom.chkHeroEbay && this.dom.chkHeroEbay.checked) stores.push('eBay');
+    if (this.dom.chkHeroBhphoto && this.dom.chkHeroBhphoto.checked) stores.push('B&H Photo');
+    if (stores.length === 0) stores.push('Amazon', 'eBay', 'B&H Photo', 'Jumia', 'Konga', 'Jiji');
 
     // Open the conversation turn before the first log line so the agent's
     // working trail is captured into the transcript.
