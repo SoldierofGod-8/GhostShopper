@@ -1991,7 +1991,26 @@ def _price_band(prices: List[float]) -> tuple:
 
 
 @app.post("/api/search", response_model=ProductSearchResponse)
-async def search_competitor_prices(request: ProductSearchRequest) -> ProductSearchResponse:
+async def search_competitor_prices(request: ProductSearchRequest):
+    """Turn any failure into a JSON body the UI can actually display.
+
+    Without this, an unhandled exception surfaces in the browser as a generic
+    "Search request failed": the client cannot parse a non-JSON body and falls
+    back to placeholder text, so the real cause never reaches the user or the
+    screen. Returning the exception type and message means the toast names the
+    actual failure, and logger.exception puts the full traceback in the log.
+    """
+    try:
+        return await _search_competitor_prices_impl(request)
+    except Exception as exc:
+        logger.exception("Product price search failed for query=%r", request.query)
+        return JSONResponse(
+            status_code=500,
+            content={"detail": f"{type(exc).__name__}: {exc}"}
+        )
+
+
+async def _search_competitor_prices_impl(request: ProductSearchRequest) -> ProductSearchResponse:
     """
     Direct Product Price Search for Dropshippers:
     Takes a product query and target stores, connects to Vultr Serverless Inference API,
