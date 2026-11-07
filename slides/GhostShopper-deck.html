@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ghost Shopper — Vultr Agent Rush Hackathon</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --bg:#060b16;
+    --bg2:#0a1220;
+    --panel:#0e1a2b;
+    --line:#1e3a5f;
+    --cyan:#22d3ee;
+    --blue:#3b82f6;
+    --green:#34d399;
+    --amber:#fbbf24;
+    --red:#f87171;
+    --text:#e2e8f0;
+    --muted:#8ba3bd;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+    overflow:hidden;
+  }
+  /* ---------- deck shell ---------- */
+  .deck{position:relative;height:100vh;width:100vw}
+  .slide{
+    position:absolute;inset:0;
+    display:none;
+    padding:clamp(28px,5vh,64px) clamp(32px,6vw,96px);
+    flex-direction:column;
+    justify-content:center;
+    background:
+      radial-gradient(1100px 620px at 82% -12%,rgba(34,211,238,.13),transparent 60%),
+      radial-gradient(900px 520px at 8% 108%,rgba(59,130,246,.12),transparent 60%),
+      linear-gradient(160deg,var(--bg) 0%,var(--bg2) 100%);
+  }
+  .slide.active{display:flex}
+  .slide.active > *{animation:rise .45s cubic-bezier(.2,.7,.3,1) both}
+  .slide.active > *:nth-child(2){animation-delay:.06s}
+  .slide.active > *:nth-child(3){animation-delay:.12s}
+  .slide.active > *:nth-child(4){animation-delay:.18s}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+  /* ---------- type ---------- */
+  .eyebrow{
+    font:600 clamp(10px,1.05vw,13px)/1 var(--mono);
+    letter-spacing:.22em;text-transform:uppercase;color:var(--cyan);
+    margin-bottom:clamp(10px,1.6vh,18px);
+  }
+  h1{
+    font-size:clamp(38px,6.2vw,84px);line-height:.98;letter-spacing:-.03em;
+    font-weight:800;
+  }
+  h2{
+    font-size:clamp(26px,3.5vw,46px);line-height:1.08;letter-spacing:-.02em;
+    font-weight:750;margin-bottom:clamp(12px,2.2vh,26px);
+  }
+  h3{font-size:clamp(14px,1.5vw,19px);font-weight:700;margin-bottom:8px}
+  p{font-size:clamp(13px,1.32vw,18px);line-height:1.55;color:var(--muted)}
+  p.lead{color:var(--text);font-size:clamp(15px,1.7vw,22px);line-height:1.5}
+  strong{color:var(--text);font-weight:700}
+  .accent{color:var(--cyan)}
+  code{
+    font-family:var(--mono);font-size:.9em;
+    background:rgba(34,211,238,.10);color:var(--cyan);
+    padding:.12em .42em;border-radius:4px;white-space:nowrap;
+  }
+
+  /* ---------- layout ---------- */
+  .grid{display:grid;gap:clamp(12px,1.6vw,20px)}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .card{
+    background:linear-gradient(180deg,rgba(20,33,52,.92),rgba(12,21,35,.92));
+    border:1px solid var(--line);border-radius:12px;
+    padding:clamp(14px,1.5vw,22px);
+  }
+  .card h3{color:var(--text)}
+  .card p{font-size:clamp(11.5px,1.08vw,14.5px);line-height:1.5}
+  .num{
+    font:700 clamp(11px,1.05vw,13px)/1 var(--mono);
+    color:var(--cyan);letter-spacing:.1em;margin-bottom:10px;display:block;
+  }
+
+  /* ---------- title slide ---------- */
+  .cover{
+    position:absolute;inset:0;
+    background-size:cover;background-position:center;
+    opacity:.55;
+  }
+  .cover::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(90deg,rgba(6,11,22,.96) 0%,rgba(6,11,22,.80) 46%,rgba(6,11,22,.30) 100%);
+  }
+  .title-inner{position:relative;z-index:2;max-width:min(760px,66vw)}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:clamp(18px,3vh,32px)}
+  .tag{
+    font:600 clamp(10px,1vw,12.5px)/1 var(--mono);
+    letter-spacing:.08em;text-transform:uppercase;
+    color:var(--cyan);border:1px solid rgba(34,211,238,.38);
+    background:rgba(34,211,238,.08);
+    padding:7px 12px;border-radius:999px;
+  }
+
+  /* ---------- tables ---------- */
+  table{width:100%;border-collapse:collapse;font-size:clamp(11px,1.06vw,14px)}
+  th{
+    text-align:left;font:600 clamp(9.5px,.98vw,12px)/1.3 var(--mono);
+    letter-spacing:.13em;text-transform:uppercase;color:var(--cyan);
+    padding:0 12px 10px 0;border-bottom:1px solid var(--line);
+  }
+  td{
+    padding:clamp(8px,1.1vh,13px) 12px clamp(8px,1.1vh,13px) 0;
+    border-bottom:1px solid rgba(30,58,95,.5);
+    color:var(--muted);vertical-align:top;line-height:1.45;
+  }
+  td:first-child{color:var(--text);font-weight:650;white-space:nowrap}
+
+  /* ---------- flow chain ---------- */
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
+  .step{
+    flex:1 1 0;min-width:0;
+    background:rgba(14,26,43,.9);border:1px solid var(--line);
+    padding:clamp(10px,1.2vw,16px);position:relative;
+  }
+  .step:first-child{border-radius:10px 0 0 10px}
+  .step:last-child{border-radius:0 10px 10px 0}
+  .step + .step{border-left:none}
+  .step .n{font:700 10px/1 var(--mono);color:var(--cyan);letter-spacing:.1em}
+  .step .t{font-size:clamp(10.5px,1vw,13px);font-weight:650;margin-top:7px;line-height:1.35}
+  .step .d{font-size:clamp(9.5px,.92vw,11.5px);color:var(--muted);margin-top:5px;line-height:1.4;font-family:var(--mono)}
+
+  /* ---------- code block ---------- */
+  .code{
+    font-family:var(--mono);font-size:clamp(10px,.98vw,13px);line-height:1.7;
+    background:rgba(4,8,14,.82);border:1px solid var(--line);
+    border-radius:10px;padding:clamp(12px,1.5vw,20px);
+    color:#b9d4ea;white-space:pre;overflow:auto;
+  }
+  .code .c{color:var(--muted)}
+  .code .k{color:var(--cyan)}
+  .code .r{color:var(--red)}
+  .code .g{color:var(--green)}
+  .code .a{color:var(--amber)}
+
+  /* ---------- callout ---------- */
+  .note{
+    border-left:3px solid var(--cyan);
+    background:rgba(34,211,238,.06);
+    padding:clamp(11px,1.4vw,18px) clamp(14px,1.8vw,22px);
+    border-radius:0 8px 8px 0;
+  }
+  .note p{color:var(--text);font-size:clamp(11.5px,1.1vw,15px)}
+  .note.warn{border-left-color:var(--amber);background:rgba(251,191,36,.07)}
+  .note.bad{border-left-color:var(--red);background:rgba(248,113,113,.07)}
+
+  .kpi{display:flex;flex-direction:column;gap:4px}
+  .kpi .v{
+    font-size:clamp(24px,3.1vw,42px);font-weight:800;letter-spacing:-.02em;
+    color:var(--cyan);line-height:1;font-variant-numeric:tabular-nums;
+  }
+  .kpi .l{font-size:clamp(10px,.98vw,12.5px);color:var(--muted);line-height:1.35}
+
+  ul.clean{list-style:none;display:flex;flex-direction:column;gap:clamp(7px,1.1vh,12px)}
+  ul.clean li{
+    font-size:clamp(12px,1.18vw,16px);line-height:1.45;color:var(--muted);
+    padding-left:22px;position:relative;
+  }
+  ul.clean li::before{
+    content:"";position:absolute;left:0;top:.52em;
+    width:7px;height:7px;border-radius:2px;
+    background:var(--cyan);box-shadow:0 0 9px rgba(34,211,238,.75);
+  }
+  ul.clean li strong{color:var(--text)}
+
+  /* ---------- chrome ---------- */
+  .bar{
+    position:fixed;left:0;bottom:0;height:3px;background:var(--cyan);
+    box-shadow:0 0 14px var(--cyan);transition:width .3s ease;z-index:20;
+  }
+  .hud{
+    position:fixed;right:clamp(16px,2.4vw,34px);bottom:clamp(14px,2vh,24px);
+    font:600 11px/1 var(--mono);letter-spacing:.13em;color:var(--muted);z-index:20;
+  }
+  .brand{
+    position:fixed;left:clamp(16px,2.4vw,34px);bottom:clamp(14px,2vh,24px);
+    font:600 11px/1 var(--mono);letter-spacing:.16em;
+    color:rgba(139,163,189,.72);text-transform:uppercase;z-index:20;
+  }
+
+  /* ---------- print / PDF ---------- */
+  @page{size:1280px 720px;margin:0}
+  @media print{
+    html,body{overflow:visible;height:auto}
+    .deck{height:auto}
+    .bar,.hud,.brand{display:none!important}
+    .slide{
+      display:flex!important;position:relative;inset:auto;
+      width:1280px;height:720px;page-break-after:always;break-after:page;
+    }
+    .slide > *{animation:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <!-- 1 · TITLE -->
+  <section class="slide active">
+    <div class="cover" style="background-image:url('../frontend/assets/cover-image.png')"></div>
+    <div class="title-inner">
+      <div class="eyebrow">Vultr Agent Rush · Challenge 01 · Blast Radius Zero</div>
+      <h1>Ghost<br><span class="accent">Shopper</span></h1>
+      <p class="lead" style="margin-top:clamp(14px,2.2vh,24px)">
+        Competitor price intelligence that treats every retail site as hostile —
+        every request running inside a disposable sandbox on Vultr.
+      </p>
+      <div class="tags">
+        <span class="tag">Pattern B · Sandboxed Browser</span>
+        <span class="tag">Comparison Shopper</span>
+        <span class="tag">Vultr Cloud Compute</span>
+        <span class="tag">Serverless Inference</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · PROBLEM -->
+  <section class="slide">
+    <div class="eyebrow">The problem</div>
+    <h2>Scraping prices is hostile work<br>for a business on 12% margins</h2>
+    <div class="grid g3" style="margin-top:clamp(8px,1.5vh,16px)">
+      <div class="card">
+        <span class="num">01</span>
+        <h3>Margin is one cent wide</h3>
+        <p>Price $2 above a competitor and conversion collapses. Price too low and every order fulfils at a loss. Dropshippers reprice constantly, by hand or not at all.</p>
+      </div>
+      <div class="card">
+        <span class="num">02</span>
+        <h3>The web fights back</h3>
+        <p>Anti-bot blocks, JavaScript memory bombs, redirect chains, and deceptive <code>$0.00</code> microdata written specifically to mislead repricing bots.</p>
+      </div>
+      <div class="card">
+        <span class="num">03</span>
+        <h3>The blast radius is the store</h3>
+        <p>A scraper that shares an IP or network with the storefront risks taking the storefront down with it. One bad page should never touch production.</p>
+      </div>
+    </div>
+    <div class="note" style="margin-top:clamp(14px,2.4vh,26px)">
+      <p>So the interesting engineering is not the scraping. It is <strong>containing</strong> it.</p>
+    </div>
+  </section>
+
+  <!-- 3 · WHAT IT IS -->
+  <section class="slide">
+    <div class="eyebrow">The product</div>
+    <h2>A centralized control layer.<br>Never a scraper on your own machine.</h2>
+    <div class="grid g2" style="margin-top:clamp(8px,1.5vh,14px);align-items:start">
+      <div>
+        <ul class="clean">
+          <li><strong>Goal in</strong> — a product and a margin target, in plain language.</li>
+          <li><strong>Orchestrator plans</strong> — the goal decomposes into per-retailer capture tasks.</li>
+          <li><strong>Sandboxes execute</strong> — headless Chromium in a disposable container, one per store, in parallel.</li>
+          <li><strong>Screenshots return</strong> — evidence lands in the shared workspace, byte for byte.</li>
+          <li><strong>Vision verifies</strong> — a vision model audits the rendered page, not the DOM, so injected text cannot lie to it.</li>
+          <li><strong>Hard purge</strong> — the container is destroyed. Nothing survives the task.</li>
+        </ul>
+      </div>
+      <div class="card" style="background:rgba(4,8,14,.6)">
+        <div class="code"><span class="c">// the invariant the whole design rests on</span>
+<span class="k">untrusted web</span>  ─┐
+                  │   sandbox  ──── <span class="g">verified output</span>
+<span class="k">credentials</span>     ─┘   boundary        to operator
+
+<span class="r">no API key</span>        ever enters a sandbox
+<span class="r">no host network</span>   ever reachable from one
+<span class="r">no container</span>      outlives its task</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · PATTERN B -->
+  <section class="slide">
+    <div class="eyebrow">Pattern B · Sandboxed browser use</div>
+    <h2>Goal → plan → isolate → verify → approve</h2>
+    <div class="flow" style="margin-top:clamp(10px,2vh,20px)">
+      <div class="step"><div class="n">01</div><div class="t">Goal</div><div class="d">user intent</div></div>
+      <div class="step"><div class="n">02</div><div class="t">Plan</div><div class="d">orchestrator</div></div>
+      <div class="step"><div class="n">03</div><div class="t">Dispatch</div><div class="d">warm pool</div></div>
+      <div class="step"><div class="n">04</div><div class="t">Capture</div><div class="d">playwright</div></div>
+      <div class="step"><div class="n">05</div><div class="t">Verify</div><div class="d">vision model</div></div>
+      <div class="step"><div class="n">06</div><div class="t">Approve</div><div class="d">human in loop</div></div>
+      <div class="step"><div class="n">07</div><div class="t">Purge</div><div class="d">docker rm -f</div></div>
+    </div>
+    <div class="grid g3" style="margin-top:clamp(16px,2.6vh,30px)">
+      <div class="card">
+        <h3>Parallel by default</h3>
+        <p>Every retailer is a separate container, captured concurrently. One slow or hostile site cannot stall the others.</p>
+      </div>
+      <div class="card">
+        <h3>Evidence, not assertions</h3>
+        <p>Each quote carries a screenshot artifact and a provenance label — <code>live</code> or <code>synthetic</code> — so nothing unverified is presented as fact.</p>
+      </div>
+      <div class="card">
+        <h3>Human gate before money</h3>
+        <p>Anomalous prices freeze for operator review. Repricing is an approval decision, never an autonomous purchase.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · ARCHITECTURE -->
+  <section class="slide">
+    <div class="eyebrow">Architecture</div>
+    <h2>One control plane, many disposable workers</h2>
+    <div class="grid g2" style="margin-top:clamp(8px,1.2vh,14px);align-items:stretch">
+      <div class="card">
+        <span class="num">CONTROL PLANE · VULTR CLOUD COMPUTE</span>
+        <h3>FastAPI orchestrator</h3>
+        <p style="margin-bottom:10px">Task planning, container lifecycle, WebSocket telemetry, human-in-the-loop state.</p>
+        <ul class="clean" style="gap:6px">
+          <li>Pre-warmed pool — no cold start mid-demo</li>
+          <li>60s hard watchdog per task</li>
+          <li>Two-tier verifier</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="num">WORKER PLANE · EPHEMERAL CONTAINERS</span>
+        <h3>Hardened Playwright sandbox</h3>
+        <p style="margin-bottom:10px">Chromium under a non-root user, writable only to its own task directory.</p>
+        <ul class="clean" style="gap:6px">
+          <li>1.0 vCPU · 512 MB · swap disabled</li>
+          <li><code>--cap-drop=ALL</code>, <code>no-new-privileges</code></li>
+          <li>Egress blocklist on link-local + RFC1918</li>
+        </ul>
+      </div>
+    </div>
+    <div class="grid g2" style="margin-top:clamp(12px,1.8vw,18px)">
+      <div class="card">
+        <span class="num">INTELLIGENCE PLANE</span>
+        <h3>Vultr Serverless Inference</h3>
+        <p>Vision pass over the rendered screenshot. Reads what a user would see, which is what defeats text-level prompt injection in hidden DOM nodes.</p>
+      </div>
+      <div class="card">
+        <span class="num">INTERFACE</span>
+        <h3>Operator dashboard</h3>
+        <p>WebSocket log stream, live sandbox viewport, price band with provenance, and explicit approve / purge controls.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · CONTAINMENT PILLARS -->
+  <section class="slide">
+    <div class="eyebrow">Containment</div>
+    <h2>Four pillars, each independently enforced</h2>
+    <table style="margin-top:clamp(8px,1.4vh,16px)">
+      <thead>
+        <tr><th>Pillar</th><th>Mechanism</th><th>Observable proof</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Process isolation</td>
+          <td>Separate container per task. Non-root worker user. <code>--cap-drop=ALL</code> and <code>no-new-privileges</code> so privilege escalation has no path.</td>
+          <td>Browser PID namespace cannot see the host or other tasks.</td>
+        </tr>
+        <tr>
+          <td>Secret hygiene</td>
+          <td>Sandbox receives a task ID and a target URL. Nothing else. API keys exist only in the orchestrator process.</td>
+          <td><code>env</code> inside the sandbox contains no credentials.</td>
+        </tr>
+        <tr>
+          <td>Resource limits</td>
+          <td>1.0 vCPU, 512 MB memory, swap pinned equal to the memory cap so it cannot spill, 60s watchdog.</td>
+          <td>Runaway page dies at the ceiling; host stays responsive.</td>
+        </tr>
+        <tr>
+          <td>Lifecycle discipline</td>
+          <td>Ephemeral workers purged with <code>docker rm -f</code> on completion, failure, or rejection — including on timeout.</td>
+          <td>State reaches <code>WIPED_AND_PURGED</code>; pool rotates fresh containers.</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="note warn" style="margin-top:clamp(12px,2vh,22px)">
+      <p><strong>Scope note.</strong> The deployed host runs the standard Docker runtime. gVisor (<code>runsc</code>) is supported as a drop-in runtime and is selected when present, but it is <strong>not</strong> installed on the current VM, so containment here rests on namespaces, cgroups, and the controls above — not on syscall interception.</p>
+    </div>
+  </section>
+
+  <!-- 7 · CONTAINMENT MOMENT -->
+  <section class="slide">
+    <div class="eyebrow">The containment moment</div>
+    <h2>What happens when a retail page attacks the host</h2>
+    <div class="grid g2" style="margin-top:clamp(8px,1.4vh,16px);align-items:start">
+      <div class="code"><span class="c"># hostile page, evaluated inside the sandbox</span>
+fetch(<span class="a">"http://169.254.169.254/latest/meta-data/"</span>)
+   .then(r =&gt; r.text())
+   .then(d =&gt; <span class="r">exfiltrate(d)</span>);
+
+<span class="c"># result, observed live</span>
+<span class="r">connect() → ECONNREFUSED / timeout</span>
+<span class="g">no credentials present to steal</span>
+<span class="g">no route to link-local or RFC1918</span>
+<span class="g">container purged after the task</span></div>
+      <div>
+        <ul class="clean">
+          <li><strong>The attempt is real.</strong> The page genuinely issues the request — it is not simulated.</li>
+          <li><strong>The request dies at the boundary.</strong> Link-local and RFC1918 egress is dropped by container and host rules.</li>
+          <li><strong>There is nothing to steal.</strong> No key, token, or credential is ever mounted into a sandbox.</li>
+          <li><strong>Nothing persists.</strong> The container is removed; its filesystem goes with it.</li>
+        </ul>
+        <div class="note" style="margin-top:clamp(12px,2vh,20px)">
+          <p>Containment is demonstrated, not asserted: the same request that would succeed on an unprotected host fails visibly inside Ghost Shopper.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · BUSINESS VALUE -->
+  <section class="slide">
+    <div class="eyebrow">Business value</div>
+    <h2>Why a dropshipper pays for this</h2>
+    <div class="grid g3" style="margin-bottom:clamp(14px,2.4vh,26px)">
+      <div class="card kpi">
+        <span class="v">12–20%</span>
+        <span class="l">Typical dropshipping margin — the entire budget for pricing mistakes</span>
+      </div>
+      <div class="card kpi">
+        <span class="v">3–5</span>
+        <span class="l">Retailers compared per product, in parallel, per search</span>
+      </div>
+      <div class="card kpi">
+        <span class="v">0</span>
+        <span class="l">Credentials that ever enter a sandbox</span>
+      </div>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <h3>Cost of the alternative</h3>
+        <p>A blocked scraper IP can take a storefront's own traffic with it. The risk is not the price of compute — it is a revenue outage during peak season, or a leak of cloud credentials from a malicious page.</p>
+      </div>
+      <div class="card">
+        <h3>Where the money is made</h3>
+        <p>Repricing against a verified median, with an honest band rather than a point estimate, and a human approving every move. That is the difference between a scraper and a pricing system a merchant will actually let run.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 · HONEST STATUS -->
+  <section class="slide">
+    <div class="eyebrow">Status · stated plainly</div>
+    <h2>What works, and what we would fix next</h2>
+    <div class="grid g2" style="margin-top:clamp(8px,1.4vh,16px);align-items:start">
+      <div class="card">
+        <h3 style="color:var(--green)">Working</h3>
+        <ul class="clean" style="gap:7px">
+          <li>Orchestrator deployed on Vultr Cloud Compute, publicly reachable</li>
+          <li>Sandbox lifecycle: create, execute, purge</li>
+          <li>Egress blocklist against metadata and private ranges</li>
+          <li>Resource caps and watchdog enforcement</li>
+          <li>Vision-verified capture path and human approval gate</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--amber)">Known gaps</h3>
+        <ul class="clean" style="gap:7px">
+          <li>Price generation falls back to a heuristic when inference fails — the number is plausible, not observed</li>
+          <li>Real prices scraped by the worker are not yet wired through the API response</li>
+          <li>gVisor not installed on the current host; standard runtime in use</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note bad" style="margin-top:clamp(12px,2vh,22px)">
+      <p><strong>We would rather show this than hide it.</strong> Containment is the claim under test, and containment is real. Pricing accuracy is the next milestone.</p>
+    </div>
+  </section>
+
+  <!-- 10 · CLOSE -->
+  <section class="slide">
+    <div class="eyebrow">Ghost Shopper</div>
+    <h2 style="max-width:22ch">An agent that only chats is a demo.<br><span class="accent">An agent that executes safely is a product.</span></h2>
+    <div class="grid g3" style="margin-top:clamp(16px,3vh,34px)">
+      <div class="card">
+        <span class="num">PUBLIC DEMO</span>
+        <p><code>http://140.82.12.47:8000/</code></p>
+      </div>
+      <div class="card">
+        <span class="num">SOURCE</span>
+        <p><code>github.com/SoldierofGod-8/GhostShopper</code><br><span style="color:var(--muted)">MIT licensed</span></p>
+      </div>
+      <div class="card">
+        <span class="num">BUILT ON</span>
+        <p>Vultr Cloud Compute<br>Vultr Serverless Inference</p>
+      </div>
+    </div>
+    <p style="margin-top:clamp(18px,3vh,30px);font-size:clamp(11px,.98vw,13px);color:var(--muted)">
+      Blast Radius Zero · Challenge 01 · Pattern B
+    </p>
+  </section>
+
+</div>
+
+<div class="bar" id="bar"></div>
+<div class="brand">Ghost Shopper</div>
+<div class="hud"><span id="cur">1</span> / <span id="tot">10</span></div>
+
+<script>
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var bar = document.getElementById('bar');
+  var cur = document.getElementById('cur');
+  document.getElementById('tot').textContent = slides.length;
+  var i = 0;
+
+  // Deep-link support: index.html#4 opens slide 4 (useful in a live demo).
+  var fromHash = parseInt((location.hash || '').replace('#', ''), 10);
+  if (fromHash >= 1 && fromHash <= slides.length) i = fromHash - 1;
+
+  function show(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function (s, k) { s.classList.toggle('active', k === i); });
+    cur.textContent = i + 1;
+    bar.style.width = ((i + 1) / slides.length * 100) + '%';
+    // Keep the URL in sync so #7 can be linked to directly. Guarded because
+    // replaceState throws a SecurityError on file:// URLs, which is exactly how
+    // this deck gets opened (double-click, no server). Without the try/catch
+    // every arrow key logs an error and navigation still works, so the failure
+    // is pure noise over a working feature.
+    try {
+      if (history.replaceState) history.replaceState(null, '', '#' + (i + 1));
+    } catch (err) { /* file:// — deep links simply cannot be written */ }
+  }
+
+  function next() { show(i + 1); }
+  function prev() { show(i - 1); }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); next(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+    else if (e.key === 'Home') { show(0); }
+    else if (e.key === 'End') { show(slides.length - 1); }
+  });
+
+  // Click advances, but only on empty space and never when selecting text.
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('a, code, table')) return;
+    if (String(window.getSelection()) !== '') return;
+    if (e.clientX > window.innerWidth * 0.72) next();
+    else if (e.clientX < window.innerWidth * 0.14) prev();
+  });
+
+  show(i);
+})();
+</script>
+</body>
+</html>
