@@ -411,6 +411,17 @@ export class ScreenshotViewer {
     const existing = this.snapshots.get(taskId) || {};
     const updated = { ...existing, ...data, taskId, lastUpdated: Date.now() };
     this.snapshots.set(taskId, updated);
+
+    // Limit active snapshot cards in viewport to at most 6 to prevent layout clutter
+    if (this.snapshots.size > 6) {
+      for (const [id, snap] of this.snapshots) {
+        if (!['EXECUTING', 'PROVISIONING', 'VERIFYING'].includes(snap.status)) {
+          this.removeSnapshot(id);
+          break;
+        }
+      }
+    }
+
     this.renderCard(taskId, updated);
     this._updateActiveCount();
   }

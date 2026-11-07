@@ -222,7 +222,7 @@ export class GhostShopperApp {
 
     // Ingest Task Execution State Updates
     this.ws.on('task_update', (task) => {
-      this._handleTaskUpdate(task);
+      this._handleTaskUpdate(task, true);
     });
 
     // Ingest Sandbox Screenshots
@@ -997,7 +997,7 @@ export class GhostShopperApp {
           ${thumbHtml}
           <div class="store-card-footer">
             <button class="btn-card-action preview" type="button">
-              📷 View DOM Snapshot
+              📷 Inspect Screenshot
             </button>
             <a class="btn-card-action link" href="${escapeHtml(quote.url)}" target="_blank" rel="noopener noreferrer">
               ↗️ Store Listing
@@ -1297,45 +1297,43 @@ export class GhostShopperApp {
    * Processes task state updates, updates snapshot cards, and populates results table.
    * @private
    */
-  _handleTaskUpdate(task) {
+  _handleTaskUpdate(task, isHistorical = false) {
     if (!task || !task.task_id) return;
     const taskId = task.task_id;
 
     // Track state
     this.tasks.set(taskId, { ...(this.tasks.get(taskId) || {}), ...task });
 
-    // Update screenshot card if screenshot provided or task is active
-    if (task.status === 'EXECUTING' || task.status === 'VERIFYING' || task.status === 'PROVISIONING') {
-      this.screenshotViewer.updateSnapshot(taskId, {
-        url: task.url,
-        containerId: task.container_id,
-        image: task.screenshot,
-        status: task.status,
-        step: task.step || task.message || `Processing target`
-      });
-    } else if (task.status === 'COMPLETED' || task.status === 'WIPED') {
-      // Auto-retire snapshot card after 4 seconds to simulate container wipe
-      setTimeout(() => {
-        this.screenshotViewer.removeSnapshot(taskId);
-      }, 4000);
+    // Only update screenshot card in viewport if NOT an initial historical load of 50+ records
+    if (!isHistorical) {
+      const screenshotUrl = task.screenshot_path
+        ? `/api/screenshot/${taskId}`
+        : (task.image || task.screenshot || `/api/screenshot/${taskId}`);
+
+      const status = task.state || task.status || 'COMPLETED';
+      const isWiped = status.includes('WIPED') || status.includes('PURGED');
+
+      if (task.status === 'EXECUTING' || task.status === 'VERIFYING' || task.status === 'PROVISIONING') {
+        this.screenshotViewer.updateSnapshot(taskId, {
+          url: task.url,
+          containerId: task.container_id || `gvisor-${taskId.substring(Math.max(0, taskId.length - 6))}`,
+          image: screenshotUrl,
+          status: task.status,
+          step: task.step || task.message || 'Processing target'
+        });
+      } else if (task.status === 'COMPLETED' || task.status === 'WIPED') {
+        this.screenshotViewer.updateSnapshot(taskId, {
+          url: task.url,
+          containerId: task.container_id || `gvisor-${taskId.substring(Math.max(0, taskId.length - 6))}`,
+          image: screenshotUrl,
+          status: status,
+          step: isWiped ? 'Verified & Purged (Zero Residual)' : (task.step || task.message || 'Intelligence verified')
+        });
+        setTimeout(() => {
+          this.screenshotViewer.removeSnapshot(taskId);
+        }, 5000);
+      }
     }
-
-    // Determine screenshot URL
-    const screenshotUrl = task.screenshot_path
-      ? `/api/screenshot/${taskId}`
-      : (task.image || task.screenshot || `/api/screenshot/${taskId}`);
-
-    const status = task.state || task.status || 'COMPLETED';
-    const isWiped = status.includes('WIPED') || status.includes('PURGED');
-
-    // Update screenshot card in the live viewport
-    this.screenshotViewer.updateSnapshot(taskId, {
-      url: task.url,
-      containerId: task.container_id || `gvisor-${taskId.substring(Math.max(0, taskId.length - 6))}`,
-      image: screenshotUrl,
-      status: status,
-      step: isWiped ? 'Verified & Purged (Zero Residual)' : (task.step || task.message || 'Intelligence verified')
-    });
 
     // If task yielded product intelligence, add to results table
     const hasData = task.product_title || task.product_name || task.price_data || task.price !== undefined;
