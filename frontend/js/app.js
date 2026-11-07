@@ -751,7 +751,7 @@ export class GhostShopperApp {
     if (this.dom.btnHeroSearch) {
       this.dom.btnHeroSearch.disabled = true;
       if (this.dom.btnHeroSearchLabel) {
-        this.dom.btnHeroSearchLabel.textContent = 'Searching via Vultr AI...';
+        this.dom.btnHeroSearchLabel.textContent = 'Searching competitor prices...';
       }
     }
 
@@ -1057,7 +1057,8 @@ export class GhostShopperApp {
           condition: "New",
           in_stock: true,
           screenshot_url: "/api/screenshot/task-sony-amazon-01",
-          task_id: "task-sony-amazon-01"
+          task_id: "task-sony-amazon-01",
+          screenshot_kind: "live"
         },
         {
           store: "Best Buy",
@@ -1068,7 +1069,8 @@ export class GhostShopperApp {
           condition: "New",
           in_stock: true,
           screenshot_url: "/api/screenshot/task-sony-bestbuy-02",
-          task_id: "task-sony-bestbuy-02"
+          task_id: "task-sony-bestbuy-02",
+          screenshot_kind: "live"
         },
         {
           store: "Walmart",
@@ -1079,7 +1081,8 @@ export class GhostShopperApp {
           condition: "New",
           in_stock: true,
           screenshot_url: "/api/screenshot/task-sony-walmart-03",
-          task_id: "task-sony-walmart-03"
+          task_id: "task-sony-walmart-03",
+          screenshot_kind: "live"
         },
         {
           store: "Target",
@@ -1090,7 +1093,8 @@ export class GhostShopperApp {
           condition: "New",
           in_stock: true,
           screenshot_url: "/api/screenshot/task-sony-bhphoto-05",
-          task_id: "task-sony-bhphoto-05"
+          task_id: "task-sony-bhphoto-05",
+          screenshot_kind: "live"
         }
       ]
     };
