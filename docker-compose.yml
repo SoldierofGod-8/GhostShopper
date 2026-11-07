@@ -19,8 +19,25 @@ services:
     volumes:
       # Docker socket mount enables orchestrator to spawn and monitor sandboxes
       - /var/run/docker.sock:/var/run/docker.sock
-      # Shared workspace for storing scrape artifacts, logs, and screenshots
-      - ./workspace:/app/workspace
+      # Shared workspace for storing scrape artifacts, logs, and screenshots.
+      #
+      # Both halves of the mount path matter and neither is obvious:
+      #
+      #   /opt/ghost-shopper/workspace  - HOST side. Must be an absolute host
+      #     path, not the relative ./workspace, because the sandbox containers
+      #     are created by the orchestrator through the Docker socket and their
+      #     bind source is interpreted by the HOST daemon. Given ./workspace,
+      #     dockerd resolves it against *its* cwd (/opt/ghost-shopper/GhostShopper),
+      #     so the sandbox would mount a different directory from the one the
+      #     orchestrator writes into.
+      #
+      #   /opt/ghost-shopper/GhostShopper/workspace  - CONTAINER side. This is
+      #     what WORKSPACE_DIR expects (/app/workspace -> /app/workspace), and it
+      #     is also the source sandbox_manager passes for the sandbox bind. One
+      #     host directory therefore serves both mounts: the orchestrator creates
+      #     the task dir, the sandbox writes the screenshot into the same place.
+      #   Override with GHOST_WORKSPACE_HOST_PATH if the repo lives elsewhere.
+      - ${GHOST_WORKSPACE_HOST_PATH:-/opt/ghost-shopper/GhostShopper/workspace}:/app/workspace
     env_file:
       - .env
     networks:
