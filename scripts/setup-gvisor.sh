@@ -39,8 +39,12 @@ fi
 
 ARCH=$(uname -m)
 case "$ARCH" in
-    x86_64)  GVISOR_ARCH="amd64" ;;
-    aarch64) GVISOR_ARCH="arm64" ;;
+    x86_64|aarch64)
+        # gVisor publishes its release binaries under the raw `uname -m` name
+        # (x86_64 / aarch64), NOT the Go-style amd64 / arm64 names. Using the
+        # Go names yields HTTP 404 from storage.googleapis.com.
+        GVISOR_ARCH="$ARCH"
+        ;;
     *)
         log_error "Unsupported architecture: $ARCH"
         exit 1
