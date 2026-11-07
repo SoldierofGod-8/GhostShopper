@@ -352,4 +352,6 @@ Ghost Shopper detects the challenge and issues a <code>docker pause</code> comma
 
 ## 📄 License
 
-Proprietary — Built for the Vultr Cloud Hackathon. All rights reserved.
+MIT — see [LICENSE](LICENSE).
+
+Built for the Vultr Agent Rush Hackathon (November 2026).
